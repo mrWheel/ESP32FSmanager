@@ -26,19 +26,6 @@ static const char UpdateServerIndex[] PROGMEM =
       <br>klik <span style='font-size:1.3em;'><b><a href="/">hier</a></b></span>
           om terug te keren naar de hoofdpagina!
      </body>
-     /*
-     <script>
-         var seconds = document.getElementById("waitSeconds").textContent;
-         var countdown = setInterval(function() {
-           seconds--;
-           document.getElementById('waitSeconds').textContent = seconds;
-           if (seconds <= 0) {
-              clearInterval(countdown);
-              window.location.assign("/")
-           }
-         }, 1000);
-     </script>
-     */
      </html>)";
 
 static const char UpdateServerSuccess[] PROGMEM = 

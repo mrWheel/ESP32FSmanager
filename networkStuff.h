@@ -37,21 +37,20 @@
   #include <AsyncTCP.h>
   #include <ESPAsyncWebServer.h>
   #include <ESPmDNS.h>
-  #include <WiFiUdp.h>      // part of ESP32 Core
-//#include <WiFiManager.h>  // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
-  #include <ESPAsyncWiFiManager.h>  // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
-
+  #include <WiFiUdp.h>              // part of ESP32 Core
+//#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
+  #include <ESPAsyncWiFiManager.h>  // https://github.com/alanswx/ESPAsyncWiFiManager
   #include <FS.h>
   //#include <SPIFFS.h>
 
+/**** UITZOEKEN ****/
 //  #include "ESP32ModUpdateServer.h"  // <<modified version of ESP32ModUpdateServer.h by Robert>>
 //  #include "UpdateServerHtml.h"   
 
 
   // WiFi Server object and parameters
-  //WiFiServer      server(80);
   AsyncWebServer        httpServer(80);
-//WebServer             httpServer(80);
+/**** UITZOEKEN ****/
 //  ESP32HTTPUpdateServer httpUpdater(true);
   DNSServer dns;
 
@@ -85,7 +84,7 @@ void startWiFi(const char* hostname, int timeOut)
   
   manageWiFi.setDebugOutput(true);
 
-  //reset saved settings
+  //reset saved settings ==>> LIJKT NIET TE WERKEN!!
   //manageWiFi.resetSettings();
   
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
@@ -120,7 +119,8 @@ void startWiFi(const char* hostname, int timeOut)
   DebugT(F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-/*******
+/**** UITZOEKEN ***/
+/********
   httpUpdater.setup(&httpServer);
   httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setSuccessPage(UpdateServerSuccess);

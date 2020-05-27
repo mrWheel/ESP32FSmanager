@@ -19,28 +19,29 @@ void restAPI(AsyncWebServerRequest *request)
 
   strncpy( URI, request->url().c_str(), sizeof(URI) );
 
+  DebugT("from[");
+  Debug(request->client()->remoteIP());
   if (request->method() == HTTP_GET)
   {
-        DebugT("from[");
-        Debug(request->client()->remoteIP());
-        Debugf("] URI[%s] method[GET] \r\n", URI);
+    Debugf("] URI[%s] method[GET] \r\n", URI);
   }
-  else  DebugTf("from[%s] URI[%s] method[PUT] \r\n" 
-                                  , String(request->client()->remoteIP()).c_str()
-                                        , URI); 
+  else  
+  {
+    Debugf("] URI[%s] method[PUT] \r\n", URI); 
+  }
 
-    int params = request->params();
-    for(int i=0;i<params;i++)
-    {
-      AsyncWebParameter* p = request->getParam(i);
-      if(p->isFile()){
-        DebugTf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-      } else if(p->isPost()){
-        DebugTf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      } else {
-        DebugTf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      }
+  int params = request->params();
+  for(int i=0;i<params;i++)
+  {
+    AsyncWebParameter* p = request->getParam(i);
+    if(p->isFile()){
+      DebugTf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+    } else if(p->isPost()){
+      DebugTf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+    } else {
+      DebugTf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
     }
+  }
 
   if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
   {
@@ -188,6 +189,7 @@ void sendDeviceSettings(AsyncWebServerRequest *request)
 } // sendDeviceSettings()
 
 
+//**** UITZOEKEN ****/
 //=======================================================================
 void postSettings(AsyncWebServerRequest *request)
 {

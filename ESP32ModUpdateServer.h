@@ -1,5 +1,7 @@
 /* 
 ***************************************************************************  
+**  THIS HAS TO BE MOVED TO A LIBRARY **
+***************************************************************************  
 **  Program  : ESP32ModUpdateServer.h
 **  Version  : v0.0.1
 **
@@ -22,7 +24,6 @@
   B
 */
 
-//#include <WebServer.h>
 #include <Update.h>
 
 #ifndef Debug

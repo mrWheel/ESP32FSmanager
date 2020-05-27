@@ -60,21 +60,6 @@ R"(
 
     <script>
       console.log("now continue with the bootstrapMain");
-      /*****
-      if (typeof bootsTrapMain !== "function") 
-      { 
-        console.log("bootsTrapMain() does NOT exist ;-) ");
-        var mainJaveScript = '/index.js';
-        var el = document.createElement('script');
-        el.async = false;
-        el.src = mainJaveScript;
-        el.type = 'text/javascript';
-        (document.getElementsByTagName('HEAD')[0]||document.body).appendChild(el);
-      }
-      document.getElementById("M_FSexplorer").src="/FSexplorer.png";
-      document.getElementById("Settings").src="/settings.png";
-      document.getElementById("S_FSexplorer").src="/FSexplorer.png";
-      *****/
       window.onload=bootsTrapMain;
     </script>
 

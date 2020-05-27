@@ -217,7 +217,8 @@ bool handleFile(AsyncWebServerRequest *request, String&& path)
   }
   if (!SPIFFS.exists("/FSexplorer.html")) request->send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
-//>>>>return SPIFFS.exists(path) ? ({File f = SPIFFS.open(path, "r"); request->streamFile(f, contentType(path)); f.close(); true;}) : false;
+  /**** UITZOEKEN ****/
+  //return SPIFFS.exists(path) ? ({File f = SPIFFS.open(path, "r"); request->streamFile(f, contentType(path)); f.close(); true;}) : false;
 
 } // handleFile()
 
@@ -226,6 +227,7 @@ bool handleFile(AsyncWebServerRequest *request, String&& path)
 void handleFileUpload(AsyncWebServerRequest *request) 
 {
   static File fsUploadFile;
+  /**** UITZOEKEN ****/
   /*
   HTTPUpload& upload = httpServer.upload();
   if (upload.status == UPLOAD_FILE_START) 

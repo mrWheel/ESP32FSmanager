@@ -1,18 +1,13 @@
 //
-// A simple server implementation showing how to:
-//  * serve static messages
-//  * read GET and POST parameters
-//  * handle missing pages / 404s
+//  Opzet voor eenESP32_Framework
+//
+//  This is "Work in Progress"!!
 //
 
-#define _FW_VERSION "v0.0.1 25-05-2020"
+#define _FW_VERSION "v0.0.1 27-05-2020"
 
 #define _HOSTNAME   "ESP32framework"
 #include "ESP32_Framework.h"
-
-//void notFound(AsyncWebServerRequest *request) {
-//    request->send(404, "text/plain", "Not found");
-//}
 
 void setup() {
   Serial.begin(115200);
@@ -66,46 +61,22 @@ void setup() {
 //================ Start HTTP Server ================================
   setupFSexplorer();
 
-    httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        //request->send(200, "text/plain", indexPage);
-        sendIndexPage(request);
-    });
+  httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    //request->send(200, "text/plain", indexPage);
+    sendIndexPage(request);
+  });
 
-    httpServer.on("/api", HTTP_GET, [](AsyncWebServerRequest *request){
-        //request->send(200, "text/plain", indexPage);
-        restAPI(request);
-    });
-/*****
-    // Send a GET request to <IP>/get?message=<message>
-    httpServer.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
-        if (request->hasParam(PARAM_MESSAGE)) {
-            message = request->getParam(PARAM_MESSAGE)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
-    });
-
-    // Send a POST request to <IP>/post with a form field message set to <message>
-    httpServer.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
-        String message;
-        DebugTln(request->getParam(PARAM_MESSAGE, true)->value());
-        if (request->hasParam(PARAM_MESSAGE, true)) {
-            message = request->getParam(PARAM_MESSAGE, true)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, POST: " + message);
-    });
-***/
+  httpServer.on("/api", HTTP_GET, [](AsyncWebServerRequest *request){
+    //request->send(200, "text/plain", indexPage);
+    restAPI(request);
+  });
   httpServer.serveStatic("/index.css", SPIFFS, "/index.css");
   httpServer.serveStatic("/index.js",  SPIFFS, "/index.js");
   httpServer.serveStatic("/FSexplorer.png",  SPIFFS, "/FSexplorer.png");
   httpServer.serveStatic("/settings.png",  SPIFFS, "/settings.png");
   httpServer.serveStatic("/flavicon.ico",  SPIFFS, "/flavicon.ico");
 
-//--httpServer.onNotFound(notFound);
+//--httpServer.onNotFound(notFound);  // defined in FSexplorer
 
   httpServer.begin();
   DebugTln("\nServer started\r");
@@ -113,4 +84,5 @@ void setup() {
 } // setup()
 
 void loop() {
+  // eat your hart out!
 }
