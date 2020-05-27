@@ -19,15 +19,18 @@ void restAPI(AsyncWebServerRequest *request)
 
   strncpy( URI, request->url().c_str(), sizeof(URI) );
 
-  DebugT("from[");
-  Debug(request->client()->remoteIP());
-  if (request->method() == HTTP_GET)
+  if (strIndex("/api/v0/devtime", request->url().c_str()) == -1)
   {
-    Debugf("] URI[%s] method[GET] \r\n", URI);
-  }
-  else  
-  {
-    Debugf("] URI[%s] method[PUT] \r\n", URI); 
+    DebugT("from[");
+    Debug(request->client()->remoteIP());
+    if (request->method() == HTTP_GET)
+    {
+      Debugf("] URI[%s] method[GET] \r\n", URI);
+    }
+    else  
+    {
+      Debugf("] URI[%s] method[PUT] \r\n", URI); 
+    }
   }
 
   int params = request->params();
@@ -102,7 +105,7 @@ void sendDeviceInfo(AsyncWebServerRequest *request)
 {
   AsyncResponseStream *response = request->beginResponseStream("application/json");
 
-  DebugTln("-");
+  if (Verbose) DebugTln("-");
   DebugFlush();
 
   sendStartJsonObj(response, "devinfo");
@@ -155,7 +158,7 @@ void sendDeviceTime(AsyncWebServerRequest *request)
   char actTime[50];
   AsyncResponseStream *response = request->beginResponseStream("application/json");
 
-  DebugTln("-");
+  if (Verbose) DebugTln("-");
   DebugFlush();
   
   sendStartJsonObj(response, "devtime");

@@ -85,6 +85,7 @@ void startWiFi(const char* hostname, int timeOut)
   manageWiFi.setDebugOutput(true);
 
   //reset saved settings ==>> LIJKT NIET TE WERKEN!!
+  // ==> change WiFi.disconnect(true) to: WiFi.disconnect(true, true); in lib.
   //manageWiFi.resetSettings();
   
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode

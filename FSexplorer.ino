@@ -5,7 +5,7 @@
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de
-**  See also https://www.arduinoforum.de/arduino-Thread-SPIFFS-DOWNLOAD-UPLOAD-DELETE-ESP32-NodeMCU
+**  See also https://www.arduinoforum.de/arduino-Thread-SPIFFS-DOWNLOAD-UPLOAD-DELETE-ESP8266-NodeMCU
 **
 ***************************************************************************      
   Copyright (c) 2018 Jens Fleischer. All rights reserved.
@@ -86,8 +86,8 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   });
   httpServer.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) 
   {
-    handleFileUpload(request);
-  });
+    request->redirect("/FSexplorer");    
+  }, handleFileUpload);
   httpServer.on("/ReBoot", HTTP_GET, [](AsyncWebServerRequest *request) 
   {
     reBootESP(request);
@@ -98,7 +98,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   });
   httpServer.onNotFound([](AsyncWebServerRequest *request) 
   {
-    if (Verbose) DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(request->url()).c_str());
+    DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(request->url()).c_str());
     if (request->url().indexOf("/api/") == 0) 
     {
       if (Verbose) DebugTf("next: processAPI(%s)\r\n", String(request->url()).c_str());
@@ -117,6 +117,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
       {
         request->send(404, "text/plain", "FileNotFound\r\n");
       }
+      request->redirect("/FSexplorer");    
     }
   });
   
@@ -196,7 +197,7 @@ typedef struct _fileMeta {
   //SPIFFS.info(SPIFFSinfo);
   temp += R"(,{"usedBytes":")" + formatBytes(SPIFFS.usedBytes() * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
           R"("totalBytes":")" + formatBytes(SPIFFS.totalBytes()) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
-          (SPIFFS.totalBytes() - (SPIFFS.usedBytes() * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
+          (SPIFFS.totalBytes() - (SPIFFS.usedBytes() * 1.05)) + R"("}])";                 // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
   
   request->send(200, "application/json", temp);
   
@@ -210,56 +211,41 @@ bool handleFile(AsyncWebServerRequest *request, String&& path)
   {
     DebugTf("Delete -> [%s]\n\r",  request->arg("delete").c_str());
     SPIFFS.remove(request->arg("delete"));    // Datei löschen
-    AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->addHeader("Server", Header);
-    request->send(response);
+    request->redirect("/FSexplorer");    
     return true;
   }
   if (!SPIFFS.exists("/FSexplorer.html")) request->send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
-  /**** UITZOEKEN ****/
-  //return SPIFFS.exists(path) ? ({File f = SPIFFS.open(path, "r"); request->streamFile(f, contentType(path)); f.close(); true;}) : false;
-
+  return SPIFFS.exists(path) ? ({request->send(SPIFFS, path, "text/plain"); true;}) : false;
+  
 } // handleFile()
 
 
 //=====================================================================================
-void handleFileUpload(AsyncWebServerRequest *request) 
+void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-  static File fsUploadFile;
-  /**** UITZOEKEN ****/
-  /*
-  HTTPUpload& upload = httpServer.upload();
-  if (upload.status == UPLOAD_FILE_START) 
+  DebugTf("index is [%5d], len[%4d]\r\n", index, len);
+  if(!index)
   {
-    if (upload.filename.length() > 30) 
-    {
-      upload.filename = upload.filename.substring(upload.filename.length() - 30, upload.filename.length());  // Dateinamen auf 30 Zeichen kürzen
-    }
-    Debugln("FileUpload Name: " + upload.filename);
-    fsUploadFile = SPIFFS.open("/" + httpServer.urlDecode(upload.filename), "w");
-  } 
-  else if (upload.status == UPLOAD_FILE_WRITE) 
-  {
-    Debugln("FileUpload Data: " + (String)upload.currentSize);
-    if (fsUploadFile)
-      fsUploadFile.write(upload.buf, upload.currentSize);
-  } 
-  else if (upload.status == UPLOAD_FILE_END) 
-  {
-    if (fsUploadFile)
-      fsUploadFile.close();
-    Debugln("FileUpload Size: " + (String)upload.totalSize);
-  AsyncResponseStream *response = request->beginResponseStream("text/html");
-  response->addHeader("Server", Header);
-  request->send(response);
+    DebugTln("UploadStart: " + filename);
+    // open the file on first call and store the file handle in the request object
+    if (filename[0] == '/')
+          request->_tempFile = SPIFFS.open(filename, "w");
+    else  request->_tempFile = SPIFFS.open("/"+filename, "w");
   }
-  */
-  AsyncResponseStream *response = request->beginResponseStream("text/html");
-  response->addHeader("Server", Header);
-  request->send(response);
-  
-} // handleFileUpload() 
+  if(len) 
+  {
+    // stream the incoming chunk to the opened file
+    request->_tempFile.write(data,len);
+  }
+  if(final)
+  {
+    DebugTln("UploadEnd: " + filename + ", " + index+len + " bytes");
+    // close the file handle as the upload is now done
+    request->_tempFile.close();
+  }
+
+} // handleFileUpload()
 
 
 //=====================================================================================
