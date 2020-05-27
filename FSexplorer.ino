@@ -102,7 +102,7 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
     if (request->url().indexOf("/api/") == 0) 
     {
       if (Verbose) DebugTf("next: processAPI(%s)\r\n", String(request->url()).c_str());
-      restAPI(request);
+      restAPI(request, 0, 0);
     }
     else if (request->url() == "/")
     {

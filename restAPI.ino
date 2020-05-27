@@ -11,14 +11,19 @@
 
 
 //=======================================================================
-void restAPI(AsyncWebServerRequest *request) 
+void restAPI(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen) 
 {
   char fName[40] = "";
   char URI[50]   = "";
   String words[10];
 
   strncpy( URI, request->url().c_str(), sizeof(URI) );
-
+  
+  if (request->hasParam("body", true))
+  {
+    DebugTln(request->getParam("body", true)->value());
+  }
+  
   if (strIndex("/api/v0/devtime", request->url().c_str()) == -1)
   {
     DebugT("from[");
@@ -89,7 +94,7 @@ void restAPI(AsyncWebServerRequest *request)
   {
     if (request->method() == HTTP_PUT || request->method() == HTTP_POST)
     {
-      postSettings(request);
+      postSettings(request, bodyData, bodyLen);
     }
     else
     {
@@ -97,6 +102,13 @@ void restAPI(AsyncWebServerRequest *request)
     }
   }
   else sendApiNotFound(request, URI);
+  
+} // restAPI()
+
+//=======================================================================
+void restAPI(AsyncWebServerRequest *request) 
+{
+  restAPI(request, 0, 0);
   
 } // restAPI()
 
@@ -194,7 +206,7 @@ void sendDeviceSettings(AsyncWebServerRequest *request)
 
 //**** UITZOEKEN ****/
 //=======================================================================
-void postSettings(AsyncWebServerRequest *request)
+void postSettings(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen)
 {
   //------------------------------------------------------------ 
   // json string: {"name":"settingInterval","value":9}  
@@ -203,16 +215,21 @@ void postSettings(AsyncWebServerRequest *request)
   // so, why not use ArduinoJSON library?
   // I say: try it yourself ;-) It won't be easy
       AsyncResponseStream *response = request->beginResponseStream("application/json");
+      
       String wOut[5];
       String wPair[5];
       String jsonIn = "";
-      char jsonChar[512] = "";
-      int args = request->args();
-      for(int i=0;i<args;i++){
-          Serial.printf("ARG[%s]: %s\n", request->argName(i).c_str(), request->arg(i).c_str());
-          snprintf(cMsg, sizeof(cMsg), "%s: %s", request->argName(i).c_str(), request->arg(i).c_str());
-          strConcat(jsonChar, sizeof(jsonChar), cMsg);
+      char jsonChar[1024] = "";
+      size_t i;
+      DebugT("bodyData: ");
+      for(i=0; (i<bodyLen && i < 1023); i++)
+      {
+        Debug((char)bodyData[i]);
+        jsonChar[i] = (char)bodyData[i];
       }
+      jsonChar[i] = '\0';
+      Debugln();
+      
       jsonIn = String(jsonChar);
       char field[25] = "";
       char newValue[101]="";
@@ -229,8 +246,10 @@ void postSettings(AsyncWebServerRequest *request)
         if (wOut[0].equalsIgnoreCase("value")) strCopy(newValue, sizeof(newValue), wOut[1].c_str());
       }
       DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
-      //--> updateSetting(field, newValue);
+      updateSetting(field, newValue);
       response->print(jsonChar);
+      //send the response last
+      request->send(response);
 
 } // postSettings()
 

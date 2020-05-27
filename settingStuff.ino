@@ -110,7 +110,8 @@ void updateSetting(const char *field, const char *newValue)
 {
   DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
 
-  if (!stricmp(field, "Hostname")) {
+  if (!stricmp(field, "Hostname")) 
+  {
     strCopy(settingHostname, sizeof(settingHostname), newValue); 
     if (strlen(settingHostname) < 1) strCopy(settingHostname, sizeof(settingHostname), _HOSTNAME); 
     char *dotPntr = strchr(settingHostname, '.') ;
@@ -121,6 +122,7 @@ void updateSetting(const char *field, const char *newValue)
     }
     Debugln();
     DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
+    startMDNS(settingHostname);
   }
 
   writeSettings(false);

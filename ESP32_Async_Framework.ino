@@ -4,7 +4,7 @@
 //  This is "Work in Progress"!!
 //
 
-#define _FW_VERSION "v0.0.1 27-05-2020"
+#define _FW_VERSION "v0.0.4 27-05-2020"
 
 #define _HOSTNAME   "ESP32framework"
 #include "ESP32_Framework.h"
@@ -61,20 +61,27 @@ void setup() {
 //================ Start HTTP Server ================================
   setupFSexplorer();
 
-  httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
     //request->send(200, "text/plain", indexPage);
     sendIndexPage(request);
   });
 
-  httpServer.on("/api", HTTP_GET, [](AsyncWebServerRequest *request){
-    //request->send(200, "text/plain", indexPage);
-    restAPI(request);
+  httpServer.on("/api", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    restAPI(request, 0, 0);
   });
-  httpServer.serveStatic("/index.css", SPIFFS, "/index.css");
-  httpServer.serveStatic("/index.js",  SPIFFS, "/index.js");
-  httpServer.serveStatic("/FSexplorer.png",  SPIFFS, "/FSexplorer.png");
-  httpServer.serveStatic("/settings.png",  SPIFFS, "/settings.png");
-  httpServer.serveStatic("/flavicon.ico",  SPIFFS, "/flavicon.ico");
+  httpServer.on("/api", HTTP_POST, [](AsyncWebServerRequest * request){},
+    NULL,
+    [](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
+      restAPI(request, data, len);
+      request->send(200);
+  });
+  httpServer.serveStatic("/index.css",      SPIFFS, "/index.css");
+  httpServer.serveStatic("/index.js",       SPIFFS, "/index.js");
+  httpServer.serveStatic("/FSexplorer.png", SPIFFS, "/FSexplorer.png");
+  httpServer.serveStatic("/settings.png",   SPIFFS, "/settings.png");
+  httpServer.serveStatic("/flavicon.ico",   SPIFFS, "/flavicon.ico");
 
 //--httpServer.onNotFound(notFound);  // defined in FSexplorer
 

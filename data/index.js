@@ -387,7 +387,7 @@
         method : "POST",
         mode : "cors"
     };
-
+    console.log("fetch["+APIGW+"v0/messages"+other_params+"]");
     fetch(APIGW+"v0/messages", other_params)
       .then(function(response) {
       }, function(error) {
@@ -408,6 +408,8 @@
         method : "POST",
         mode : "cors"
     };
+
+    console.log("fetch["+APIGW+"v0/settings]");
 
     fetch(APIGW+"v0/settings", other_params)
       .then(function(response) {
