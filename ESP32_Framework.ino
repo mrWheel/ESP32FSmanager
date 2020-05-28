@@ -94,4 +94,9 @@ void setup() {
 
 void loop() {
   // eat your hart out!
+  if (millis() > blinkyTimer)
+  {
+    blinkyTimer = millis() + 2000;
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  }
 }
