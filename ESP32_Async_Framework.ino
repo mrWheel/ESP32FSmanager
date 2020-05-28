@@ -1,10 +1,10 @@
 //
-//  Opzet voor eenESP32_Framework
+//  Opzet voor een ESP32_Framework
 //
 //  This is "Work in Progress"!!
 //
 
-#define _FW_VERSION "v0.0.4 27-05-2020"
+#define _FW_VERSION "v0.0.6 28-05-2020"
 
 #define _HOSTNAME   "ESP32framework"
 #include "ESP32_Framework.h"
@@ -60,10 +60,12 @@ void setup() {
 
 //================ Start HTTP Server ================================
   setupFSexplorer();
-
+  updateServer.setIndexPage(updateServerIndex);
+  updateServer.setSuccessPage(updateServerSuccess);
+  setupUpdateServer(&httpServer, "/update");
+  
   httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
   {
-    //request->send(200, "text/plain", indexPage);
     sendIndexPage(request);
   });
 

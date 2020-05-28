@@ -92,10 +92,10 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   {
     reBootESP(request);
   });
-  httpServer.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) 
-  {
-    updateFirmware(request);
-  });
+//  httpServer.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) 
+//  {
+//    updateFirmware(request);
+//  });
   httpServer.onNotFound([](AsyncWebServerRequest *request) 
   {
     DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(request->url()).c_str());

@@ -44,15 +44,14 @@
   //#include <SPIFFS.h>
 
 /**** UITZOEKEN ****/
-//  #include "ESP32ModUpdateServer.h"  // <<modified version of ESP32ModUpdateServer.h by Robert>>
-//  #include "UpdateServerHtml.h"   
+  #include "ESPModUpdateServer.h"  // <<modified version of ESP32ModUpdateServer.h by Robert>>
+  #include "UpdateServerHtml.h"   
 
 
   // WiFi Server object and parameters
-  AsyncWebServer        httpServer(80);
-/**** UITZOEKEN ****/
-//  ESP32HTTPUpdateServer httpUpdater(true);
-  DNSServer dns;
+  AsyncWebServer      httpServer(80);
+  ESPModUpdateServer  updateServer;
+  DNSServer           dns;
 
 bool        SPIFFSmounted; 
 bool        isConnected = false;
@@ -156,6 +155,33 @@ void startMDNS(const char *Hostname)
   MDNS.addService("http", "tcp", 80);
   
 } // startMDNS()
+
+
+//====================================================================
+boolean setupUpdateServer(AsyncWebServer *server, const char* path) 
+{
+  server->on(path, HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    updateServer.handleUpdate(request);
+  });
+  server->on("/doUpdate", HTTP_POST,
+    [](AsyncWebServerRequest *request) {},
+    [](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data,
+                  size_t len, bool final) 
+  {
+    updateServer.handleDoUpdate(request, filename, index, data, len, final);
+  });
+  //server->onNotFound([](AsyncWebServerRequest *request)
+  //{
+  //  request->send(404);
+  //});
+  
+  //server->begin();
+#ifdef ESP32
+  //Update.onProgress(printProgress);
+#endif
+
+} // setupUpdateServer()
 
 /***************************************************************************
 *

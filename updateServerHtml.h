@@ -1,17 +1,17 @@
 
-static const char UpdateServerIndex[] PROGMEM =
+static const char updateServerIndex[] PROGMEM =
   R"(<html charset="UTF-8">
      <style type='text/css'>
         body {background-color: lightblue;}
      </style>
      <body>
      <h1>ESP32_Framework Flash utility</h1>
-     <form method='POST' action='?cmd=0' enctype='multipart/form-data'>
+     <form method='POST' action='/doUpdate?cmd=0' enctype='multipart/form-data'>
           Selecteer een "<b>.ino.bin</b>" bestand<br/>
           <input type='file' accept='ino.bin' name='firmware'>
           <input type='submit' value='Flash Firmware'>
       </form>
-      <form method='POST' action='?cmd=100' enctype='multipart/form-data'> 
+      <form method='POST' action='/doUpdate?cmd=100' enctype='multipart/form-data'> 
           Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
           <input type='file' accept='spiffs.bin' name='filesystem'>
           <input type='submit' value='Flash Spiffs'>
@@ -28,7 +28,7 @@ static const char UpdateServerIndex[] PROGMEM =
      </body>
      </html>)";
 
-static const char UpdateServerSuccess[] PROGMEM = 
+static const char updateServerSuccess[] PROGMEM = 
   R"(<html charset="UTF-8">
      <style type='text/css'>
         body {background-color: lightgray;}
@@ -41,7 +41,7 @@ static const char UpdateServerSuccess[] PROGMEM =
      <br/>Wait for the ESP32_Framework to reboot and start the HTTP server
      <br/>
      <br>
-     <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">30</span> seconden ..
+     <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">10</span> seconden ..
      <br/>Als het lijkt of er niets gebeurd, wacht dan tot de teller
           op 'nul' staat en klik daarna <span style='font-size:1.3em;'><b><a href="/">hier</a></b></span>!
      </body>
