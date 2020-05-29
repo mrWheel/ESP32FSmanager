@@ -40,14 +40,15 @@ class ESPModUpdateServer
 {
 
 public:
-ESPModUpdateServer() 
-{
-  static const char _defaultIndex[] = R"(
+  //====================================================================
+  ESPModUpdateServer() 
+  {
+    static const char _defaultIndex[] = R"(
             <form method='POST' action='/doUpdate' enctype='multipart/form-data'>
               <input type='file' name='update'>
               <input type='submit' value='Update'>
             </form>)";
-  static const char _defaultSuccess[] = R"(
+    static const char _defaultSuccess[] = R"(
             <html charset="UTF-8">
             <body>
               <h2>Update successful!</h2>
@@ -68,45 +69,11 @@ ESPModUpdateServer()
             </script>
             </html>)";
 
-  setIndexPage(_defaultIndex);  
-  setSuccessPage(_defaultSuccess);
+    setIndexPage(_defaultIndex);  
+    setSuccessPage(_defaultSuccess);
 
-} // ESPModUpdateServer();
+  } // ESPModUpdateServer();
 
-/**
-void begin()
-{
-  static const char _defaultIndex[] = R"(
-            <form method='POST' action='/doUpdate' enctype='multipart/form-data'>
-              <input type='file' name='update'>
-              <input type='submit' value='Update'>
-            </form>)";
-  static const char _defaultSuccess[] = R"(
-            <html charset="UTF-8">
-            <body>
-              <h2>Update successful!</h2>
-              <br/>
-              <br/>Wait <span style='font-size: 1.3em;' id="waitSeconds">10</span> seconds ..
-            </body>
-            <script>
-              var seconds = document.getElementById("waitSeconds").textContent;
-              var countdown = setInterval(function() 
-              {
-                seconds--;
-                document.getElementById('waitSeconds').textContent = seconds;
-                if (seconds <= 0) {
-                  clearInterval(countdown);
-                  window.location.assign("/")
-                }
-              }, 1000);
-            </script>
-            </html>)";
-
-  setIndexPage(_defaultIndex);  
-  setSuccessPage(_defaultSuccess);
-
-} // begin();
-**/
 
   //====================================================================
   void setIndexPage(const char *indexPage)

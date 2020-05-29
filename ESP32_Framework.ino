@@ -4,7 +4,7 @@
 //  This is "Work in Progress"!!
 //
 
-#define _FW_VERSION "v0.0.6 28-05-2020"
+#define _FW_VERSION "v0.0.7 29-05-2020"
 
 #define _HOSTNAME   "ESP32framework"
 #include "ESP32_Framework.h"
@@ -21,6 +21,8 @@ void setup() {
   DebugTf("Booting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
       
   //================ SPIFFS ===========================================
+  // https://github.com/espressif/arduino-esp32/issues/3000
+  // if (SPIFFS.begin(false,"/spiffs",20)) 
   if (SPIFFS.begin()) 
   {
     DebugTln(F("SPIFFS Mount succesfull\r"));
@@ -84,6 +86,8 @@ void setup() {
   httpServer.serveStatic("/FSexplorer.png", SPIFFS, "/FSexplorer.png");
   httpServer.serveStatic("/settings.png",   SPIFFS, "/settings.png");
   httpServer.serveStatic("/flavicon.ico",   SPIFFS, "/flavicon.ico");
+  httpServer.serveStatic("/stressTest.html",SPIFFS, "/stressTest.html");
+  httpServer.serveStatic("/stressTest.js",  SPIFFS, "/stressTest.js");
 
 //--httpServer.onNotFound(notFound);  // defined in FSexplorer
 
@@ -99,4 +103,6 @@ void loop() {
     blinkyTimer = millis() + 2000;
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
-}
+
+  delay(1);
+} // loop()

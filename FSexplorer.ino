@@ -61,35 +61,42 @@ const char Header[] = "HTTP/1.1 303 OK\r\nLocation:FSexplorer.html\r\nCache-Cont
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-  SPIFFS.begin();
+  delay(1);
   
-  if (SPIFFS.exists("/FSexplorer.html")) 
-  {
+  //if (SPIFFS.exists("/FSexplorer.html")) 
+  //{
     httpServer.serveStatic("/FSexplorer.html", SPIFFS, "/FSexplorer.html");
     httpServer.serveStatic("/FSexplorer.css",  SPIFFS, "/FSexplorer.css");
     httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html");
-  }
-  else 
+  //}
+  // else
+  if (!SPIFFS.exists("/FSexplorer.html"))  
   {
     httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
     {
+      delay(1);
       request->send(200, "text/html", Helper); //Upload the FSexplorer.html
     });
   }
   httpServer.on("/api/listfiles", HTTP_GET, [](AsyncWebServerRequest *request)
   {
+    delay(1);
     APIlistFiles(request);
   });
-  httpServer.on("/SPIFFSformat", HTTP_GET, [](AsyncWebServerRequest *request)
+  httpServer.on("/SPIFFSformat", HTTP_POST, [](AsyncWebServerRequest *request)
   {
+    delay(1);
+    DebugTln("httpServer.on(/SPIFFSformat) ..");
     formatSpiffs(request);
   });
   httpServer.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) 
   {
+    delay(1);
     request->redirect("/FSexplorer");    
   }, handleFileUpload);
   httpServer.on("/ReBoot", HTTP_GET, [](AsyncWebServerRequest *request) 
   {
+    delay(1);
     reBootESP(request);
   });
 //  httpServer.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) 
@@ -98,23 +105,28 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
 //  });
   httpServer.onNotFound([](AsyncWebServerRequest *request) 
   {
+    delay(1);
     DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(request->url()).c_str());
     if (request->url().indexOf("/api/") == 0) 
     {
+      delay(1);
       if (Verbose) DebugTf("next: processAPI(%s)\r\n", String(request->url()).c_str());
       restAPI(request, 0, 0);
     }
     else if (request->url() == "/")
     {
+      delay(1);
       DebugTln("index requested..");
       sendIndexPage(request);
     }
     else
     {
+      delay(1);
       DebugTf("next: handleFile(%s)\r\n"
                       , String(request->urlDecode(request->url())).c_str());
       if (!handleFile(request, request->urlDecode(request->url())))
       {
+        delay(1);
         request->send(404, "text/plain", "FileNotFound\r\n");
       }
       request->redirect("/FSexplorer");    
@@ -147,6 +159,7 @@ typedef struct _fileMeta {
 
   File file = root.openNextFile();
   while(file){
+    delay(1);
     if(file.isDirectory()){
         DebugT("  DIR : ");
         DebugTln(file.name());
@@ -207,6 +220,7 @@ typedef struct _fileMeta {
 //=====================================================================================
 bool handleFile(AsyncWebServerRequest *request, String&& path) 
 {
+  delay(1);
   if (request->hasArg("delete")) 
   {
     DebugTf("Delete -> [%s]\n\r",  request->arg("delete").c_str());
@@ -216,7 +230,8 @@ bool handleFile(AsyncWebServerRequest *request, String&& path)
   }
   if (!SPIFFS.exists("/FSexplorer.html")) request->send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
-  return SPIFFS.exists(path) ? ({request->send(SPIFFS, path, "text/plain"); true;}) : false;
+  bool test = SPIFFS.exists(path) ? ({request->send(SPIFFS, path, "text/plain"); true;}) : false;
+  return test;
   
 } // handleFile()
 
@@ -227,6 +242,7 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
   DebugTf("index is [%5d], len[%4d]\r\n", index, len);
   if(!index)
   {
+    delay(1);
     DebugTln("UploadStart: " + filename);
     // open the file on first call and store the file handle in the request object
     if (filename[0] == '/')
@@ -252,11 +268,15 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
 void formatSpiffs(AsyncWebServerRequest *request) 
 {       //Formatiert den Speicher
   if (!SPIFFS.exists("/!format")) return;
-  DebugTln(F("Format SPIFFS"));
+  delay(1);
+  DebugT(F("Format SPIFFS .."));
   SPIFFS.format();
-  AsyncResponseStream *response = request->beginResponseStream("text/html");
-  response->addHeader("server", Header);
-  request->send(response);
+  Debugln(" Done!");
+  delay(1000);
+  request->redirect("/");    
+  //AsyncResponseStream *response = request->beginResponseStream("text/html");
+  //response->addHeader("server", Header);
+  //request->send(response);
   
 } // formatSpiffs()
 

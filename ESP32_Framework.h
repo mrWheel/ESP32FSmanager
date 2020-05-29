@@ -10,8 +10,8 @@
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream
 #include "Debug.h"
 #include "networkStuff.h"
-#include "SPIFFS.h"
-
+#include <FS.h>
+#include <SPIFFS.h>
   
 bool      Verbose = false;
 char      cMsg[CMSG_SIZE];

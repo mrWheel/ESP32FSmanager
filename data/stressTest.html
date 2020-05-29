@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html charset="UTF-8">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+    <script src="/stressTest.js"></script>
+    <link rel="stylesheet" type="text/css" href="/index.css">
+    <title>ESP32_Framework</title>
+  </head>
+  <body>
+    <font face="Arial">
+    <!-- <div class="dev-header"> -->
+    <div class="header">
+      <h1>
+        <span id="sysName">ESP32_Framework StressTest</span> &nbsp; &nbsp; &nbsp;
+        <span id="devName"    style='font-size: small;'>devName</span> &nbsp;
+        <span id="devVersion" style='font-size: small;'>[devVersion]</span>
+        <span id='theTime' class='nav-item nav-clock'>theTime</span>
+      </h1>
+    </div>
+    </font>
+    <div id="displayMainPage"      style="display:none">
+      <div class="nav-container">
+        <div class='nav-left'>
+          <a id='saveMsg' class='nav-item tabButton' style="background: lightblue;">opslaan</a>
+          <a id='M_FSexplorer'    class='nav-img'>
+                      <img src='/FSexplorer.png' alt='FSexplorer'></a>
+          <a id='Settings'      class='nav-img'>
+                      <img src='/settings.png' alt='Settings'></a>
+        </div>
+      </div>
+      <br/>
+      <div id="mainPage">
+        <div id="waiting">Reload page in <span style='font-size: 1.3em;' id="waitSeconds">3</span> seconds ..</div>
+      </div>
+    </div>
+
+    <div id="displaySettingsPage"  style="display:none">
+      <div class="nav-container">
+        <div class='nav-left'>
+          <a id='back' class='nav-item tabButton' style="background: lightblue;">Terug</a>
+          <a id='saveSettings' class='nav-item tabButton' style="background: lightblue;">opslaan</a>
+          <a id='S_FSexplorer' class='nav-img'>
+                      <img src='/FSexplorer.png' alt='FSexplorer'></a>
+        </div>
+      </div>
+      <br/>
+      <div id="settingsPage"></div>
+    </div>
+  
+    <!-- KEEP THIS --->
+
+    <!-- Pin to bottom right corner -->
+    <div class="bottom right-0">2020 &copy; Willem Aandewiel</div>
+
+    <!-- Pin to bottom left corner -->
+    <div id="message" class="bottom left-0">-</div>
+
+    <script>
+         var seconds = document.getElementById("waitSeconds").textContent;
+         var countdown = setInterval(function() {
+           seconds--;
+           document.getElementById('waitSeconds').textContent = seconds;
+           if (seconds <= 0) {
+              clearInterval(countdown);
+              window.location.assign("/stressTest.html")
+           }
+         }, 1000);
+
+    </script>
+
+  </body>
+
+</html>
