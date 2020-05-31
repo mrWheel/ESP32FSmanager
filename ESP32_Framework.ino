@@ -9,7 +9,63 @@
 #define _HOSTNAME   "ESP32framework"
 #include "ESP32_Framework.h"
 
-void setup() {
+//====================================================================
+void readLastStatus()
+{
+  char buffer[50] = "";
+  char dummy[50] = "";
+  char spiffsTimestamp[21] = "";
+  
+  File _file = SPIFFS.open("/lastStatus.csv", "r");
+  if (!_file)
+  {
+    DebugTln("read(): No /lastStatus.csv found ..");
+  }
+  if(_file.available()) {
+    int l = _file.readBytesUntil('\n', buffer, sizeof(buffer));
+    buffer[l] = 0;
+    //DebugTf("read lastUpdate[%s]\r\n", buffer);
+    sscanf(buffer, "%[^;]; %u; %[^;]", spiffsTimestamp, &nrReboots, dummy);
+    yield();
+  }
+  _file.close();
+  DebugTf("values timestamp[%s], nrReboots[%u], dummy[%s]\r\n"
+                                                    , spiffsTimestamp
+                                                    , nrReboots
+                                                    , dummy);
+  
+}  // readLastStatus()
+
+
+//====================================================================
+void writeLastStatus()
+{
+  char buffer[50] = "";
+  char timeStamp[21];
+  
+  snprintf(timeStamp, 20, "%04d-%02d-%02d %02d:%02d:%02d", year(), month(), day()
+                                                         , hour(), minute(), second());
+  DebugTf("writeLastStatus() => %s; %u;\r\n", timeStamp, nrReboots);
+
+  File _file = SPIFFS.open("/lastStatus.csv", "w");
+  if (!_file)
+  {
+    DebugTln("write(): No /lastStatus.csv found ..");
+  }
+  snprintf(buffer, sizeof(buffer), "%-20.20s; %010u; %s;\n"
+                                    , timeStamp
+                                            , nrReboots
+                                                    , "meta data");
+  _file.print(buffer);
+  _file.flush();
+  _file.close();
+  
+} // writeLastStatus()
+
+
+//====================================================================
+void setup() 
+{
   Serial.begin(115200);
   while(!Serial) { /* wait a bit */ }
 
@@ -22,8 +78,8 @@ void setup() {
       
   //================ SPIFFS ===========================================
   // https://github.com/espressif/arduino-esp32/issues/3000
-  // if (SPIFFS.begin(false,"/spiffs",20)) 
-  if (SPIFFS.begin()) 
+  if (SPIFFS.begin(false,"/spiffs",30)) 
+  //if (SPIFFS.begin()) 
   {
     DebugTln(F("SPIFFS Mount succesfull\r"));
     SPIFFSmounted = true;
@@ -31,7 +87,7 @@ void setup() {
     DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
     SPIFFSmounted = false;
   }
-
+  
   readSettings(true);
 
   // attempt to connect to Wifi network:
@@ -60,6 +116,13 @@ void setup() {
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ((String)esp_reset_reason()).c_str());
   DebugTln(cMsg);
 
+  //==========================================================//
+  // writeLastStatus();  // only for firsttime initialization //
+  //==========================================================//
+  readLastStatus(); // 
+  DebugTf("nrReboots[%u]\r\n\n", nrReboots++);                                                                    
+  writeLastStatus();
+
 //================ Start HTTP Server ================================
   setupFSexplorer();
   updateServer.setIndexPage(updateServerIndex);
@@ -79,15 +142,13 @@ void setup() {
     NULL,
     [](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
       restAPI(request, data, len);
-      request->send(200);
+      //request->send(200);
   });
   httpServer.serveStatic("/index.css",      SPIFFS, "/index.css");
   httpServer.serveStatic("/index.js",       SPIFFS, "/index.js");
   httpServer.serveStatic("/FSexplorer.png", SPIFFS, "/FSexplorer.png");
   httpServer.serveStatic("/settings.png",   SPIFFS, "/settings.png");
   httpServer.serveStatic("/flavicon.ico",   SPIFFS, "/flavicon.ico");
-  httpServer.serveStatic("/stressTest.html",SPIFFS, "/stressTest.html");
-  httpServer.serveStatic("/stressTest.js",  SPIFFS, "/stressTest.js");
 
 //--httpServer.onNotFound(notFound);  // defined in FSexplorer
 
@@ -96,13 +157,30 @@ void setup() {
   
 } // setup()
 
-void loop() {
+//====================================================================
+void loop() 
+{
   // eat your hart out!
   if (millis() > blinkyTimer)
   {
     blinkyTimer = millis() + 2000;
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
+  if (millis() > lastStatusTimer)
+  {
+    lastStatusTimer = millis() + 60000;
+    DebugFlush();
+    readLastStatus(); // 
+    DebugFlush();
+    DebugTf("number of restarts [%u]\r\n", nrReboots);
+    DebugFlush();
+  }
 
-  delay(1);
+  if (doFormatSPIFFS)
+  {
+    doFormatSPIFFS = false;
+    DebugT(F("Format SPIFFS .."));
+    SPIFFS.format();
+    Debugln(" Done!");
+  }
 } // loop()

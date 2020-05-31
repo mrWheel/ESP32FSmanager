@@ -197,6 +197,22 @@ void sendJsonSettingObj(AsyncResponseStream *response, const char *cName, int iV
 
 
 //=======================================================================
+void sendJsonSettingObj(AsyncResponseStream *response, const char *cName, uint32_t uiValue, const char *iType, int minValue, int maxValue)
+{
+  char jsonBuff[200] = "";
+  //AsyncResponseStream *response;
+
+  snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %u, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, uiValue, iType, minValue, maxValue);
+
+  response->print(jsonBuff);
+
+  sprintf(objSprtr, ",\r\n");
+
+} // sendJsonSettingObj(*char, uint, *char, int, int)
+
+
+//=======================================================================
 void sendJsonSettingObj(AsyncResponseStream *response, const char *cName, const char *cValue, const char *sType, int maxLen)
 {
   char jsonBuff[200] = "";

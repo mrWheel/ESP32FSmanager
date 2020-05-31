@@ -61,15 +61,21 @@ R"(
     <script>
       console.log("now continue with the bootstrapMain");
       window.onload=bootsTrapMain;
+      var countdown = setInterval(function() {
+          window.location.assign("/")
+      }, 30000);
+
     </script>
-
   </body>
-
 </html>
 )";
 
 void sendIndexPage(AsyncWebServerRequest *request)
 {
+  delay(500); // slowdown number of concurrent requests
+  DebugT("request From: ");
+  Debugln(request->client()->remoteIP());
+
   request->send(200, "text/html", indexPage);
 
 } // sendIndexPage()

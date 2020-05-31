@@ -24,6 +24,7 @@ void writeSettings(bool show)
   DebugT(F("Start writing setting data "));
 
   file.print("Hostname = ");  file.println(settingHostname);  Debug(F("."));
+  file.print("nrReboots = "); file.println(nrReboots);        Debug(F("."));
 
   file.close();  
   
@@ -33,6 +34,7 @@ void writeSettings(bool show)
   {
     DebugTln(F("Wrote this:"));
     DebugT(F("        Hostname = ")); Debugln(settingHostname);
+    DebugT(F("       nrReboots = ")); Debugln(nrReboots);
 
   } // show
   
@@ -84,14 +86,11 @@ void readSettings(bool show)
 
     //strToLower(cKey);
     if (stricmp(cKey, "hostname") == 0)         strCopy(settingHostname,         sizeof(settingHostname), cVal);
+    if (stricmp(cKey, "nrReboots") == 0)        nrReboots = atoi(cVal);
 
   } // while available()
   
   file.close();  
-
-  //--- this will take some time to settle in
-  //--- probably need a reboot before that to happen :-(
-  //----MDNS.setHostname(settingHostname);    // start advertising with new(?) settingHostname
 
   DebugTln(F(" .. done\r"));
 
@@ -99,6 +98,7 @@ void readSettings(bool show)
   
   Debugln(F("\r\n==== read Settings ===================================================\r"));
   Debugf("                 Hostname : %s\r\n",  settingHostname);
+  Debugf("                nrReboots : %u\r\n",  nrReboots);
   
   Debugln(F("-\r"));
 
@@ -108,7 +108,7 @@ void readSettings(bool show)
 //=======================================================================
 void updateSetting(const char *field, const char *newValue)
 {
-  DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
+  DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
 
   if (!stricmp(field, "Hostname")) 
   {
@@ -122,7 +122,11 @@ void updateSetting(const char *field, const char *newValue)
     }
     Debugln();
     DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
-    startMDNS(settingHostname);
+  }
+  if (!stricmp(field, "nrReboots"))
+  {
+    nrReboots = atoi(newValue); 
+    writeLastStatus();
   }
 
   writeSettings(false);

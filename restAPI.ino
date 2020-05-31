@@ -194,9 +194,9 @@ void sendDeviceSettings(AsyncWebServerRequest *request)
 
   sendStartJsonObj(response, "settings");
   
-  sendJsonSettingObj(response, "hostname", settingHostname, "s", sizeof(settingHostname) -1);
-//sendJsonSettingObj(response, "float",    settingFloat,    "f", 0, 10,  5);
-//sendJsonSettingObj(response, "intager",  settingInteger , "i", 2, 60);
+  sendJsonSettingObj(response, "hostname",  settingHostname, "s", sizeof(settingHostname) -1);
+//sendJsonSettingObj(response, "float",     settingFloat,    "f", 0, 10,  5);
+  sendJsonSettingObj(response, "nrReboots", nrReboots,       "i", 0, 60000);
 
   sendEndJsonObj(response);
   request->send(response);
@@ -204,7 +204,6 @@ void sendDeviceSettings(AsyncWebServerRequest *request)
 } // sendDeviceSettings()
 
 
-//**** UITZOEKEN ****/
 //=======================================================================
 void postSettings(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen)
 {
@@ -267,7 +266,7 @@ void sendApiNotFound(AsyncWebServerRequest *request, const char *URI)
   response->print("<h1>ESP32_Framework</h1><b1>");
   response->print("<br>[<b>");
   response->print(URI);
-  response->print("</b>] is not a valid ");
+  response->print("</b>] is not a valid API call");
   
   response->print("<h3>Headers</h3>");
   response->print("<ul>");
@@ -277,7 +276,7 @@ void sendApiNotFound(AsyncWebServerRequest *request, const char *URI)
     response->printf("<li>%s: %s</li>", h->name().c_str(), h->value().c_str());
   }
   response->print("</ul>");
-
+/**
   response->print("<h3>Parameters</h3>");
   response->print("<ul>");
   int params = request->params();
@@ -292,7 +291,7 @@ void sendApiNotFound(AsyncWebServerRequest *request, const char *URI)
     }
   }
   response->print("</ul>");
-
+**/
   response->print("</body></html>");
   //send the response last
   request->send(response);

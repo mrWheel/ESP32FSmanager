@@ -14,11 +14,13 @@
 #include <SPIFFS.h>
   
 bool      Verbose = false;
+bool      doFormatSPIFFS = false;
 char      cMsg[CMSG_SIZE];
 char      fChar[10];
 String    lastReset   = "";
 char      settingHostname[41];
-uint32_t  blinkyTimer;
+uint32_t  blinkyTimer, lastStatusTimer;
+uint32_t  nrReboots = 0;
 Timezone  CET;
 
 const char *weekDayName[]  {  "Unknown", "Zondag", "Maandag", "Dinsdag", "Woensdag"

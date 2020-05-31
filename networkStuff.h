@@ -111,7 +111,7 @@ void startWiFi(const char* hostname, int timeOut)
     return;
   }
   
-  WiFi.setSleep(false);// <--- this command disables WiFi energy save mode and eliminate connected():
+  //WiFi.setSleep(false);// <--- this command disables WiFi energy save mode and eliminate connected():
   
   Debugln();
   DebugT(F("Connected to " )); Debugln (WiFi.SSID());
