@@ -148,12 +148,12 @@ void setup()
   httpServer.serveStatic("/index.js",       SPIFFS, "/index.js");
   httpServer.serveStatic("/FSexplorer.png", SPIFFS, "/FSexplorer.png");
   httpServer.serveStatic("/settings.png",   SPIFFS, "/settings.png");
-  httpServer.serveStatic("/flavicon.ico",   SPIFFS, "/flavicon.ico");
+  httpServer.serveStatic("/favicon.ico",    SPIFFS, "/favicon.ico");
 
 //--httpServer.onNotFound(notFound);  // defined in FSexplorer
 
   httpServer.begin();
-  DebugTln("\nServer started\r");
+  DebugTln("\r\nServer started\r");
   
 } // setup()
 

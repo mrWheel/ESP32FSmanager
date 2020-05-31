@@ -23,7 +23,8 @@ void restAPI(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen)
   {
     DebugTln(request->getParam("body", true)->value());
   }
-  
+
+  DebugFlush();
   if (strIndex("/api/v0/devtime", request->url().c_str()) == -1)
   {
     DebugT("from[");
@@ -60,6 +61,7 @@ void restAPI(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen)
 
   int8_t wc = splitString(URI, '/', words, 10);
   
+  DebugFlush();
   if (Verbose) 
   {
     DebugT(">>");
@@ -104,6 +106,7 @@ void restAPI(AsyncWebServerRequest *request, uint8_t *bodyData, size_t bodyLen)
   else sendApiNotFound(request, URI);
   
 } // restAPI()
+
 
 //=======================================================================
 void restAPI(AsyncWebServerRequest *request) 
