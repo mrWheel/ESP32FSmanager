@@ -1,7 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : ESP32ModUpdateServer.h
-**  Version  : v0.0.1
+**  Program  : espModUpdateServer.h
 **  
 **  This is a hack based on sample code, the HTTP8266UpdateServer 
 **  and Willem Aandewiel modfication of the orginal.
