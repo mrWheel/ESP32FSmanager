@@ -31,34 +31,33 @@
 **      }
 */
 
-
+/**** files below are included in framework.h ***
   #include <WiFi.h>
   #include <WiFiClient.h>
-  #include <AsyncTCP.h>
-  #include <ESPAsyncWebServer.h>
+  #include <WebServer.h>
+  #include <HTTPClient.h>
   #include <ESPmDNS.h>
   #include <WiFiUdp.h>              // part of ESP32 Core
-//#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
-  #include <ESPAsyncWiFiManager.h>  // https://github.com/alanswx/ESPAsyncWiFiManager
+  #include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
   #include <FS.h>
   //#include <SPIFFS.h>
 
-/**** UITZOEKEN ****/
-  #include "ESPModUpdateServer.h"  // <<modified version of ESP32ModUpdateServer.h by Robert>>
-  #include "UpdateServerHtml.h"   
+  #include "ESPModUpdateServer.h"  
+  #include "updateServerHtml.h"   
+
+  ESP32HTTPUpdateServer updateServer(true);
 
 
   // WiFi Server object and parameters
-  AsyncWebServer      httpServer(80);
-  ESPModUpdateServer  updateServer;
+  WebServer           httpServer(80);
+  //>>ESPModUpdateServer  updateServer;
   DNSServer           dns;
+****/
 
-bool        SPIFFSmounted; 
-bool        isConnected = false;
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
-void configModeCallback (AsyncWiFiManager *myWiFiManager) 
+void configModeCallback (WiFiManager *myWiFiManager) 
 {
   //char cMsg[100];
   DebugTln(F("Entered config mode\r"));
@@ -74,8 +73,7 @@ void configModeCallback (AsyncWiFiManager *myWiFiManager)
 //===========================================================================================
 void startWiFi(const char* hostname, int timeOut) 
 {
-//WiFiManager manageWiFi;
-  AsyncWiFiManager manageWiFi(&httpServer,&dns);
+  WiFiManager manageWiFi;
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
@@ -88,11 +86,10 @@ void startWiFi(const char* hostname, int timeOut)
   //manageWiFi.resetSettings();
   
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  //manageWiFi.setAPCallback(configModeCallback);
+  manageWiFi.setAPCallback(configModeCallback);
 
   //--- sets timeout until configuration portal gets turned off
   //--- useful to make it all retry or go to sleep in seconds
-  //manageWiFi.setTimeout(240);  // 4 minuten
   manageWiFi.setTimeout(timeOut);  // in seconden ...
   
   //--- fetches ssid and pass and tries to connect
@@ -119,12 +116,10 @@ void startWiFi(const char* hostname, int timeOut)
   DebugT(F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
-/**** UITZOEKEN ***/
-/********
-  httpUpdater.setup(&httpServer);
-  httpUpdater.setIndexPage(UpdateServerIndex);
-  httpUpdater.setSuccessPage(UpdateServerSuccess);
-********/
+  updateServer.setup(&httpServer);
+  updateServer.setIndexPage(updateServerIndex);
+  updateServer.setSuccessPage(updateServerSuccess);
+
   DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
   
 } // startWiFi()
@@ -134,7 +129,8 @@ void startWiFi(const char* hostname, int timeOut)
 void startTelnet() 
 {
   TelnetStream.begin();
-  DebugTln(F("\nTelnet server started .."));
+  Debugln();
+  DebugTln(F("Telnet server started .."));
   TelnetStream.flush();
 
 } // startTelnet()
@@ -157,8 +153,9 @@ void startMDNS(const char *Hostname)
 } // startMDNS()
 
 
+/**
 //====================================================================
-boolean setupUpdateServer(AsyncWebServer *server, const char* path) 
+boolean setupUpdateServer(const char* path) 
 {
   server->on(path, HTTP_GET, [](AsyncWebServerRequest *request)
   {
@@ -173,7 +170,7 @@ boolean setupUpdateServer(AsyncWebServer *server, const char* path)
   });
   //server->onNotFound([](AsyncWebServerRequest *request)
   //{
-  //  request->send(404);
+  //  httpServer.send(404);
   //});
   
   //server->begin();
@@ -182,6 +179,7 @@ boolean setupUpdateServer(AsyncWebServer *server, const char* path)
 #endif
 
 } // setupUpdateServer()
+**/
 
 /***************************************************************************
 *

@@ -1,174 +1,156 @@
 /* 
 ***************************************************************************  
-**  THIS HAS TO BE MOVED TO A LIBRARY **
-***************************************************************************  
-**  Program  : ESPModUpdateServer.h
+**  Program  : ESP32ModUpdateServer.h
 **  Version  : v0.0.1
+**  
+**  This is a hack based on sample code, the HTTP8266UpdateServer 
+**  and Willem Aandewiel modfication of the orginal.
 **
+**  API is compatible with the Willem's modification.
+** 
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
-**  
-**  This is a hack based on sample code from: 
-**  https://github.com/lbernstone/asyncUpdate/blob/master/AsyncUpdate.ino 
-**  
-**  and modified by Willem Aandewiel.
-**
 ***************************************************************************      
 */
 
-#ifndef ESP_MOD_UPDATE_SERVER_H
-#define ESP_MOD_UPDATE_SERVER_H
+#ifndef ESP32_HTTP_UPDATE_SERVER_H
+#define ESP32_HTTP_UPDATE_SERVER_H
 
 #ifndef Debug
   //#warning Debug() was not defined!
-  #define Debug(...)    ({ Debug(__VA_ARGS__); })  
-  #define Debugln(...)  ({ Debugln(__VA_ARGS__); })  
-  #define Debugf(...)   ({ Debugf(__VA_ARGS__); })  
+  #define Debug(...)    ({ Serial.print(__VA_ARGS__); })  
+  #define Debugln(...)  ({ Serial.println(__VA_ARGS__); })  
+  #define Debugf(...)   ({ Serial.printf(__VA_ARGS__); })  
 //#else
 //  #warning Seems Debug() is already defined!
 #endif
 
-#include <ESPAsyncWebServer.h>
-#ifdef ESP8266
-  #include <Updater.h>
-  #include <ESP8266mDNS.h>
-#else
-  #include <Update.h>
-  #include <ESPmDNS.h>
-#endif
+#include <WebServer.h>
+#include <Update.h>
 
-class ESPModUpdateServer
+class ESP32HTTPUpdateServer
 {
-
-public:
-  //====================================================================
-  ESPModUpdateServer() 
-  {
-    static const char _defaultIndex[] = R"(
-            <form method='POST' action='/doUpdate' enctype='multipart/form-data'>
-              <input type='file' name='update'>
-              <input type='submit' value='Update'>
-            </form>)";
-    static const char _defaultSuccess[] = R"(
-            <html charset="UTF-8">
-            <body>
-              <h2>Update successful!</h2>
-              <br/>
-              <br/>Wait <span style='font-size: 1.3em;' id="waitSeconds">10</span> seconds ..
-            </body>
-            <script>
-              var seconds = document.getElementById("waitSeconds").textContent;
-              var countdown = setInterval(function() 
-              {
-                seconds--;
-                document.getElementById('waitSeconds').textContent = seconds;
-                if (seconds <= 0) {
-                  clearInterval(countdown);
-                  window.location.assign("/")
-                }
-              }, 1000);
-            </script>
-            </html>)";
-
-    setIndexPage(_defaultIndex);  
-    setSuccessPage(_defaultSuccess);
-
-  } // ESPModUpdateServer();
-
-
-  //====================================================================
-  void setIndexPage(const char *indexPage)
-  {
-    _serverIndex = indexPage;
-  }
-
-  //====================================================================
-  void setSuccessPage(const char *successPage)
-  {
-    _serverSuccess = successPage;
-  }  
-  
-  //====================================================================
-  void handleUpdate(AsyncWebServerRequest *request) 
-  {
-    request->send(200, "text/html", _serverIndex);
-  }
-
-
-  //====================================================================
-  void handleDoUpdate(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) 
-  {
-    if (!index)
-    {
-      Debugln("Update");
-      _content_len = request->contentLength();
-      // if filename includes spiffs, update the spiffs partition
-      int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
-  #ifdef ESP8266
-      Update.runAsync(true);
-      if (!Update.begin(content_len, cmd)) 
-      {
-  #else
-      if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) 
-      {
-  #endif
-        Update.printError(Serial);
-        Update.printError(TelnetStream);
-      }
-    }
-
-    if (Update.write(data, len) != len) 
-    {
-      Update.printError(Serial);
-      Update.printError(TelnetStream);
-    } 
-    else 
-    {
-  #ifdef ESP8266
-      Debugf("Progress: %d%%\r\n", (Update.progress()*100)/Update.size());
-  #else
-      Debug(".");
-  #endif
-    }
-
-    if (final) 
-    {
-      Debugln(" done!");
-      AsyncWebServerResponse *response = request->beginResponse(302, "text/html", _serverSuccess);
-      request->send(response);
-      if (!Update.end(true))
-      {
-        Update.printError(Serial);
-      } 
-      else 
-      {
-        Debug("Update complete [");
-        Debug(_content_len);
-        Debugln(" bytes]\r\nReboot in 1 second\r");
-        DebugFlush();
-        delay(1000);
-        ESP.restart();
-      }
-    }
-  } // handleDoUpdate()
-
-
-//====================================================================
-  void printProgress(size_t prg, size_t sz) 
-  {
-    Debugf("Progress: %d%%\n", (prg*100)/sz);
-  
-  } // printProgress()
-
-
-  
 private:
-  AsyncWebServer *_server;
-  size_t _content_len;
-  const char *_path;
+  WebServer* _server;
+
+  String      _username;
+  String      _password;
+  bool        _serialDebugging;
   const char *_serverIndex;
   const char *_serverSuccess;
 
-}; // end Class ESPModUpdateServer()
+public:
+  ESP32HTTPUpdateServer(bool serialDebugging = false)
+  {
+    _server   = NULL;
+    _username = "";
+    _password = "";
+  }
+
+  void setIndexPage(const char *indexPage)
+  {
+  _serverIndex = indexPage;
+  }
+
+  void setSuccessPage(const char *successPage)
+  {
+  _serverSuccess = successPage;
+  }  
+
+  void setup(WebServer* server, const char* path = "/update", const char* username = "", const char* password = "")
+  {
+    _server   = server;
+    _username = username;
+    _password = password;
+
+    // Get of the index handling
+    _server->on(path, HTTP_GET, [&]() 
+    {
+      // Force authentication if a user and password are defined
+      if (_username.length() > 0 && _password.length() > 0 && !_server->authenticate(_username.c_str(), _password.c_str()))
+      {
+        return _server->requestAuthentication();
+      }
+      _server->sendHeader("Connection", "close");
+      _server->send(200, "text/html", _serverIndex);
+    });
+
+    // Post of the file handling
+    _server->on(path, HTTP_POST, [&]() 
+    {
+      _server->client().setNoDelay(true);
+      _server->send_P(200, "text/html", (Update.hasError()) ? "FAIL" : _serverSuccess);
+      delay(100);
+      _server->client().stop();
+      ESP.restart();
+    }, [&]() 
+    {
+      HTTPUpload& upload = _server->upload();
+
+      if (upload.status == UPLOAD_FILE_START) 
+      {
+        // Check if we are authenticated
+        if (!(_username.length() == 0 || _password.length() == 0 || _server->authenticate(_username.c_str(), _password.c_str())))
+        {
+          if (_serialDebugging)
+          {
+            DebugTf("Unauthenticated Update\r\n");
+          }
+          return;
+        }
+
+        // Debugging message for upload start
+        if (_serialDebugging) 
+        {
+          Serial.setDebugOutput(true);
+          DebugTf("Update: %s\r\n", upload.filename.c_str());
+        }
+
+        // Starting update
+        bool error = Update.begin(UPDATE_SIZE_UNKNOWN);
+        if (_serialDebugging && error)
+        {
+          Update.printError(Serial);
+          Update.printError(TelnetStream);
+        }
+      }
+      else if (upload.status == UPLOAD_FILE_WRITE) 
+      {
+        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize && _serialDebugging) 
+        {
+          Update.printError(Serial);
+          Update.printError(TelnetStream);
+        }
+        Debug(".");
+      }
+      else if (upload.status == UPLOAD_FILE_END) 
+      {
+        //if (Update.end(true) && _serialDebugging)
+        if (Update.end(true))
+        {
+          DebugTln();
+          DebugTf("Update Success: %u\r\n", upload.totalSize);
+          DebugTf("Rebooting...\r\n");
+          delay(1000);
+        }
+        else if(_serialDebugging)
+        {
+          Update.printError(Serial);
+          Update.printError(TelnetStream);
+        }
+        if(_serialDebugging)
+        {
+          Serial.setDebugOutput(false);
+        }
+      }
+      else if(_serialDebugging)
+      {
+        Debugf("Update Failed Unexpectedly (likely broken connection): status=%d\r\n", upload.status);
+      }
+    });
+
+    _server->begin();
+  }
+};
 
 #endif
 
@@ -194,4 +176,5 @@ private:
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * 
-***************************************************************************/
+****************************************************************************
+*/

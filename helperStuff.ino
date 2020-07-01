@@ -59,7 +59,7 @@ int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWor
     {
       wOut[wordCount][0] = 0;
     }
-    // if not whole string processed place rest in last word
+    // if not whole string post_2_function place rest in last word
     if (inxS < inStrng.length()) 
     {
       wOut[maxWords-1] = inStrng.substring(inxS, inStrng.length());  // store rest of String      
@@ -347,26 +347,30 @@ float strToFloat(const char *s, int dec)
 
 } //  strToFloat()
 
+
 //===========================================================================================
-void parseJsonKey(const char *sIn, const char *key, char *val, int valLen)
+void translate_reset_reason(char *cReason, uint8_t lenReason, int reason)
 {
-  // json key-value pair looks like:
-  //      "samenv": "Zwaar bewolkt",
-  // or   "samenv": "Zwaar bewolkt"}
-  int keyStart   = strIndex(sIn, key);
-  int sepStart   = strIndex(sIn, ",", keyStart);
-  if (sepStart == -1) 
+  switch (reason)
   {
-    sepStart   = strIndex(sIn, "}", keyStart);
+    case 1  : snprintf(cReason, lenReason, "Vbat power on reset"); break;
+    case 3  : snprintf(cReason, lenReason, "Software reset digital core"); break;
+    case 4  : snprintf(cReason, lenReason, "Legacy watch dog reset digital core"); break;
+    case 5  : snprintf(cReason, lenReason, "Deep Sleep reset digital core"); break;
+    case 6  : snprintf(cReason, lenReason, "Reset by SLC module, reset digital core"); break;
+    case 7  : snprintf(cReason, lenReason, "Timer Group0 Watch dog reset digital core"); break;
+    case 8  : snprintf(cReason, lenReason, "Timer Group1 Watch dog reset digital core"); break;
+    case 9  : snprintf(cReason, lenReason, "RTC Watch dog Reset digital core"); break;
+    case 10 : snprintf(cReason, lenReason, "Instrusion tested to reset CPU"); break;
+    case 11 : snprintf(cReason, lenReason, "Time Group reset CPU"); break;
+    case 12 : snprintf(cReason, lenReason, "Software reset CPU"); break;
+    case 13 : snprintf(cReason, lenReason, "RTC Watch dog Reset CPU"); break;
+    case 14 : snprintf(cReason, lenReason, "for APP CPU, reseted by PRO CPU"); break;
+    case 15 : snprintf(cReason, lenReason, "Reset when the vdd voltage is not stable"); break;
+    case 16 : snprintf(cReason, lenReason, "RTC Watch dog reset digital core and rtc module"); break;
+    default : snprintf(cReason, lenReason, "NO_MEAN");
   }
-  strCopy(val, valLen, sIn, keyStart+strlen(key), sepStart);
-  strRemoveAll(val, valLen, ':');
-  strRemoveAll(val, valLen, ',');
-  strRemoveAll(val, valLen, '}');
-  strRemoveAll(val, valLen, '"');
-  strTrim(val, valLen, ' ');
-  
-} // parseJsonKey()
+} // translate_reset_reason()
 
 
 //===========================================================================================

@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : mainProgram.h
+**  Program  : ESP32_Framework.h
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -8,29 +8,47 @@
 ***************************************************************************      
 */
 
+#define SETTINGS_FILE   "/settings.ini"
+#define CMSG_SIZE        512
+#define JSON_BUFF_MAX   1024
+#define LED_BUILTIN        2     // GPIO-02
+#define LED_ON          HIGH
+#define LED_OFF          LOW
 
-#define _MAXDINGEN  10
-#define _FLD1       20
-#define _FLD2        5  
-#define _FLD3       13
-#define _FLD4       15
-#define _FLD5       20
-#define _FLD6       30
-#define _FLD7       10
-#define _FLD8        5
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <HTTPClient.h>
+#include <ESPmDNS.h>
+#include <WiFiUdp.h>              // part of ESP32 Core
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager/releases 2.0.1-alpha
+#include <ezTime.h>             // https://github.com/ropg/ezTime v0.8.3
+#include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream
+#include <FS.h>
+#include <SPIFFS.h>
 
-typedef struct _ding {
-  char fld1[_FLD1];
-  char fld2[_FLD2];
-  char fld3[_FLD3];
-  char fld4[_FLD4];
-  char fld5[_FLD5];
-  char fld6[_FLD6];
-  char status[2];
-} ding_s;
+#include "Debug.h"
+#include "espModUpdateServer.h"  
+#include "espUpdateServerHtml.h"   
 
-ding_s    dingen[_MAXDINGEN];
-uint32_t  blinkyTimer, lastStatusTimer;
+ESP32HTTPUpdateServer updateServer(true);
+
+// WiFi Server object and parameters
+WebServer           httpServer(80);
+DNSServer           dns;
+
+bool      Verbose = false;
+bool      doFormatSPIFFS = false;
+char      cMsg[CMSG_SIZE];
+char      fChar[10];
+char      lastReset[50];
+char      settingHostname[41];
+uint32_t  nrReboots = 0;
+Timezone  CET;
+bool      SPIFFSmounted; 
+bool      isConnected = false;
+
+const char *flashMode[]    { "QIO", "QOUT", "DIO", "DOUT", "FAST READ", "SLOWREAD", "Unknown" };
 
 
 

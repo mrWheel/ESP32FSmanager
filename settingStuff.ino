@@ -86,7 +86,11 @@ void readSettings(bool show)
 
     //strToLower(cKey);
     if (stricmp(cKey, "hostname") == 0)         strCopy(settingHostname,         sizeof(settingHostname), cVal);
-    if (stricmp(cKey, "nrReboots") == 0)        nrReboots = atoi(cVal);
+    if (stricmp(cKey, "nrReboots") == 0) {
+      DebugTf("nrReboots[%u]", nrReboots);
+      nrReboots = atoi(cVal);
+      Debugf("==>[%u]\r\n", nrReboots);
+    }
 
   } // while available()
   

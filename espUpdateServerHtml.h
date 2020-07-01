@@ -6,12 +6,12 @@ static const char updateServerIndex[] PROGMEM =
      </style>
      <body>
      <h1>ESP32_Framework Flash utility</h1>
-     <form method='POST' action='/doUpdate?cmd=0' enctype='multipart/form-data'>
+     <form method='POST' action='/update?cmd=0' enctype='multipart/form-data'>
           Selecteer een "<b>.ino.bin</b>" bestand<br/>
           <input type='file' accept='ino.bin' name='firmware'>
           <input type='submit' value='Flash Firmware'>
       </form>
-      <form method='POST' action='/doUpdate?cmd=100' enctype='multipart/form-data'> 
+      <form method='POST' action='/update?cmd=100' enctype='multipart/form-data'> 
           Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
           <input type='file' accept='spiffs.bin' name='filesystem'>
           <input type='submit' value='Flash Spiffs'>

@@ -61,68 +61,42 @@ const char Header[] = "HTTP/1.1 303 OK\r\nLocation:FSexplorer.html\r\nCache-Cont
 //=====================================================================================
 void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebunden werden
 {    
-  httpServer.serveStatic("/FSexplorer.html", SPIFFS, "/FSexplorer.html");
-  httpServer.serveStatic("/FSexplorer.css",  SPIFFS, "/FSexplorer.css");
-  httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html");
-
-  if (!SPIFFS.exists("/FSexplorer.html"))  
+  if (SPIFFS.exists("/FSexplorer.html")) 
   {
-    httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+    httpServer.serveStatic("/FSexplorer.html", SPIFFS, "/FSexplorer.html");
+    httpServer.serveStatic("/FSexplorer",      SPIFFS, "/FSexplorer.html");
+    httpServer.serveStatic("/FSexplorer.css",  SPIFFS, "/FSexplorer.css");
+    httpServer.serveStatic("/FSexplorer.png",  SPIFFS, "/FSexplorer.png");
+  }
+  else   {
+    httpServer.on("/", HTTP_GET, []()
     {
-      request->send(200, "text/html", Helper); //Upload the FSexplorer.html
+      httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
     });
   }
-  httpServer.on("/api/listfiles", HTTP_GET, [](AsyncWebServerRequest *request)
+
+  httpServer.on("/api/listfiles", HTTP_GET, APIlistFiles);
+  httpServer.on("/SPIFFSformat", HTTP_POST, formatSpiffs);
+  httpServer.on("/upload", HTTP_POST, []() {}, handleFileUpload);
+  httpServer.on("/ReBoot", HTTP_GET, reBootESP);
+  httpServer.on("/update", HTTP_GET, updateFirmware); 
+  httpServer.onNotFound([]() 
   {
-    APIlistFiles(request);
-  });
-  httpServer.on("/SPIFFSformat", HTTP_POST, [](AsyncWebServerRequest *request)
-  {
-    DebugTln("httpServer.on(/SPIFFSformat) ..");
-    formatSpiffs(request);
-  });
-  httpServer.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) 
-  {
-    request->redirect("/FSexplorer");    
-  }, handleFileUpload);
-  httpServer.on("/ReBoot", HTTP_GET, [](AsyncWebServerRequest *request) 
-  {
-    reBootESP(request);
-  });
-//  httpServer.on("/update", HTTP_GET, [](AsyncWebServerRequest *request) 
-//  {
-//    updateFirmware(request);
-//  });
-  httpServer.onNotFound([](AsyncWebServerRequest *request) 
-  {
-    DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(request->url()).c_str());
-    if (request->url().indexOf("/api/") == 0) 
+    DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
+    DebugTf("next: handleFile(%s)\r\n"
+                        , String(httpServer.urlDecode(httpServer.uri())).c_str());
+    if (!handleFile(httpServer.urlDecode(httpServer.uri())))
     {
-      if (Verbose) DebugTf("next: processAPI(%s)\r\n", String(request->url()).c_str());
-      restAPI(request, 0, 0);
+      httpServer.send(404, "text/plain", "FileNotFound\r\n");
     }
-    else if (request->url() == "/")
-    {
-      DebugTln("index requested..");
-      sendIndexPage(request);
-    }
-    else
-    {
-      DebugTf("next: handleFile(%s)\r\n"
-                      , String(request->urlDecode(request->url())).c_str());
-      if (!handleFile(request, request->urlDecode(request->url())))
-      {
-        request->send(404, "text/plain", "FileNotFound\r\n");
-      }
-      request->redirect("/FSexplorer");    
-    }
+    doRedirect("/FSexplorer", 2, "/FSexplorer", false);
   });
   
 } // setupFSexplorer()
 
 
 //=====================================================================================
-void APIlistFiles(AsyncWebServerRequest *request)             // Senden aller Daten an den Client
+void APIlistFiles()             // Senden aller Daten an den Client
 {   
 typedef struct _fileMeta {
     char    Name[30];     
@@ -196,62 +170,67 @@ typedef struct _fileMeta {
           R"("totalBytes":")" + formatBytes(SPIFFS.totalBytes()) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
           (SPIFFS.totalBytes() - (SPIFFS.usedBytes() * 1.05)) + R"("}])";                 // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
   
-  request->send(200, "application/json", temp);
+  httpServer.send(200, "application/json", temp);
   
 } // APIlistFiles()
 
 
 //=====================================================================================
-bool handleFile(AsyncWebServerRequest *request, String&& path) 
+bool handleFile(String&& path) 
 {
-  if (request->hasArg("delete")) 
+  if (httpServer.hasArg("delete")) 
   {
-    DebugTf("Delete -> [%s]\n\r",  request->arg("delete").c_str());
-    SPIFFS.remove(request->arg("delete"));    // Datei löschen
-    request->redirect("/FSexplorer");    
+    DebugTf("Delete -> [%s]\n\r",  httpServer.arg("delete").c_str());
+    SPIFFS.remove(httpServer.arg("delete"));    // Datei löschen
+    httpServer.sendContent(Header);
     return true;
   }
-  if (!SPIFFS.exists("/FSexplorer.html")) request->send(200, "text/html", Helper); //Upload the FSexplorer.html
+  if (!SPIFFS.exists("/FSexplorer.html")) httpServer.send(200, "text/html", Helper); //Upload the FSexplorer.html
   if (path.endsWith("/")) path += "index.html";
-  bool test = SPIFFS.exists(path) ? ({request->send(SPIFFS, path, "text/plain"); true;}) : false;
-  return test;
-  
+  return SPIFFS.exists(path) ? ({File f = SPIFFS.open(path, "r"); httpServer.streamFile(f, contentType(path)); f.close(); true;}) : false;
+
 } // handleFile()
 
 
 //=====================================================================================
-void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+void handleFileUpload() 
 {
-  DebugTf("index is [%5d], len[%4d]\r\n", index, len);
-  if(!index)
+  static File fsUploadFile;
+  HTTPUpload& upload = httpServer.upload();
+  if (upload.status == UPLOAD_FILE_START) 
   {
-    DebugTln("UploadStart: " + filename);
-    // open the file on first call and store the file handle in the request object
-    if (filename[0] == '/')
-          request->_tempFile = SPIFFS.open(filename, "w");
-    else  request->_tempFile = SPIFFS.open("/"+filename, "w");
-  }
-  if(len) 
+    if (upload.filename.length() > 30) 
+    {
+      upload.filename = upload.filename.substring(upload.filename.length() - 30, upload.filename.length());  // Dateinamen auf 30 Zeichen kürzen
+    }
+    Debugln("FileUpload Name: " + upload.filename);
+    fsUploadFile = SPIFFS.open("/" + httpServer.urlDecode(upload.filename), "w");
+  } 
+  else if (upload.status == UPLOAD_FILE_WRITE) 
   {
-    // stream the incoming chunk to the opened file
-    request->_tempFile.write(data,len);
-  }
-  if(final)
+    Debugln("FileUpload Data: " + (String)upload.currentSize);
+    if (fsUploadFile)
+      fsUploadFile.write(upload.buf, upload.currentSize);
+  } 
+  else if (upload.status == UPLOAD_FILE_END) 
   {
-    DebugTln("UploadEnd: " + filename + ", " + index+len + " bytes");
-    // close the file handle as the upload is now done
-    request->_tempFile.close();
+    if (fsUploadFile)
+      fsUploadFile.close();
+    Debugln("FileUpload Size: " + (String)upload.totalSize);
+    httpServer.sendContent(Header);
   }
-
-} // handleFileUpload()
+  
+} // handleFileUpload() 
 
 
 //=====================================================================================
-void formatSpiffs(AsyncWebServerRequest *request) 
+void formatSpiffs() 
 {       //Formatiert den Speicher
   if (!SPIFFS.exists("/!format")) return;
-  doFormatSPIFFS = true;
-  request->redirect("/FSexplorer");    
+  DebugTln(F("Format SPIFFS"));
+  SPIFFS.format();
+  httpServer.sendContent(Header);
+  doRedirect("/FSexplorer", 2, "/FSexplorer", false);
   
 } // formatSpiffs()
 
@@ -266,18 +245,18 @@ const String formatBytes(size_t const& bytes)
 const String &contentType(String& filename) 
 {       
   if (filename.endsWith(".htm") || filename.endsWith(".html")) filename = "text/html";
-  else if (filename.endsWith(".css")) filename = "text/css";
-  else if (filename.endsWith(".js")) filename = "application/javascript";
-  else if (filename.endsWith(".json")) filename = "application/json";
-  else if (filename.endsWith(".png")) filename = "image/png";
-  else if (filename.endsWith(".gif")) filename = "image/gif";
-  else if (filename.endsWith(".jpg")) filename = "image/jpeg";
-  else if (filename.endsWith(".ico")) filename = "image/x-icon";
-  else if (filename.endsWith(".xml")) filename = "text/xml";
-  else if (filename.endsWith(".pdf")) filename = "application/x-pdf";
-  else if (filename.endsWith(".zip")) filename = "application/x-zip";
-  else if (filename.endsWith(".gz")) filename = "application/x-gzip";
-  else filename = "text/plain";
+  else if (filename.endsWith(".css"))   filename = "text/css";
+  else if (filename.endsWith(".js"))    filename = "application/javascript";
+  else if (filename.endsWith(".json"))  filename = "application/json";
+  else if (filename.endsWith(".png"))   filename = "image/png";
+  else if (filename.endsWith(".gif"))   filename = "image/gif";
+  else if (filename.endsWith(".jpg"))   filename = "image/jpeg";
+  else if (filename.endsWith(".ico"))   filename = "image/x-icon";
+  else if (filename.endsWith(".xml"))   filename = "text/xml";
+  else if (filename.endsWith(".pdf"))   filename = "application/x-pdf";
+  else if (filename.endsWith(".zip"))   filename = "application/x-zip";
+  else if (filename.endsWith(".gz"))    filename = "application/x-gzip";
+  else                                  filename = "text/plain";
   return filename;
   
 } // &contentType()
@@ -291,23 +270,24 @@ bool freeSpace(uint16_t const& printsize)
 
 
 //=====================================================================================
-void updateFirmware(AsyncWebServerRequest *request)
+void updateFirmware()
 {
-  DebugTln(F("Redirect to updateIndex .."));
-  doRedirect(request, "wait ... ", 1, "/updateIndex", false);
+  DebugTln(F("Redirect to update .."));
+  //doRedirect("wait ... ", 1, "/updateIndex", false);
+  doRedirect("wait ... ", 1, "/update", false);
       
 } // updateFirmware()
 
 //=====================================================================================
-void reBootESP(AsyncWebServerRequest *request)
+void reBootESP()
 {
   DebugTln(F("Redirect and ReBoot .."));
-  doRedirect(request, "Reboot ESP32_Framework ..", 60, "/", true);
+  doRedirect("Reboot ESP32_Framework ..", 60, "/", true);
       
 } // reBootESP()
 
 //=====================================================================================
-void doRedirect(AsyncWebServerRequest *request, String msg, int wait, const char* URL, bool reboot)
+void doRedirect(String msg, int wait, const char* URL, bool reboot)
 {
   String redirectHTML = 
   "<!DOCTYPE HTML><html lang='en-US'>"
@@ -316,7 +296,7 @@ void doRedirect(AsyncWebServerRequest *request, String msg, int wait, const char
   "<style type='text/css'>"
   "body {background-color: lightblue;}"
   "</style>"
-  "<title>Redirect to Main Program</title>"
+  "<title>Redirect</title>"
   "</head>"
   "<body><h1>FSexplorer</h1>"
   "<h3>"+msg+"</h3>"
@@ -341,12 +321,14 @@ void doRedirect(AsyncWebServerRequest *request, String msg, int wait, const char
   "</body></html>\r\n";
   
   DebugTln(msg);
-  request->send(200, "text/html", redirectHTML);
+  httpServer.send(200, "text/html", redirectHTML);
   if (reboot) 
   {
-    delay(5000);
+    delay(1000);
     ESP.restart();
-    delay(5000);
+    delay(2000);
   }
   
 } // doRedirect()
+
+/* eof */

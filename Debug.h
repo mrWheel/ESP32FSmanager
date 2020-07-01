@@ -32,16 +32,19 @@
   
   #define Debug(...)      ({ DEBUG_PORT.print(__VA_ARGS__);         \
                              TelnetStream.print(__VA_ARGS__);       \
+                             DebugFlush();                          \
                           })
   #define Debugln(...)    ({ DEBUG_PORT.println(__VA_ARGS__);       \
                              TelnetStream.println(__VA_ARGS__);     \
+                             DebugFlush();                          \
                           })
   #define Debugf(...)     ({ DEBUG_PORT.printf(__VA_ARGS__);        \
                              TelnetStream.printf(__VA_ARGS__);      \
+                             DebugFlush();                          \
                           })
   
   #define DebugFlush()    ({ DEBUG_PORT.flush();                    \
-                             TelnetStream.flush();               \
+                             TelnetStream.flush();                  \
                           })
   
   
@@ -63,10 +66,14 @@
   void _debugBOL(const char *fn, int line)
   {
      
-    snprintf(_bol, sizeof(_bol), "[%02d:%02d:%02d][%7u|%6u] %-12.12s(%4d): ", \
-                  hour(), minute(), second(), \
-                  ESP.getFreeHeap(), ESP.getMaxAllocHeap(),\
-                  fn, line);
+  snprintf(_bol, sizeof(_bol), "[%02d:%02d:%02d][%7u|%6u] %-17.17s(%4d): ", \
+                hour(), minute(), second(), \
+                ESP.getFreeHeap(), ESP.getMaxAllocHeap(),\
+                fn, line);
+//    snprintf(_bol, sizeof(_bol), "[%02d:%02d:%02d][%7u] %-18.18s(%4d): ", \
+//                  hour(), minute(), second(), \
+//                  ESP.getMaxAllocHeap(),\
+//                  fn, line);
                    
     DEBUG_PORT.print (_bol);
     TelnetStream.print(_bol);
