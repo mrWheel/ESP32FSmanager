@@ -10,6 +10,27 @@
 //
 // -- changed WebServer.cpp in
 // ~/Library/Arduino15/packages/esp32/hardware/esp32/1.0.4/libraries/WebServer/src
+//
+//--------------------------------------------------------------------------
+//316  if (_currentClient.available()) {
+//       if (_parseRequest(_currentClient)) {
+//         // because HTTP_MAX_SEND_WAIT is expressed in milliseconds,
+//         // it must be divided by 1000
+//         _currentClient.setTimeout(HTTP_MAX_SEND_WAIT / 1000);
+//         _contentLength = CONTENT_LENGTH_NOT_SET;
+//         _handleRequest();
+//
+//         /* this comment out for chrome/maxthon browsers
+//         if (_currentClient.connected()) {
+//           _currentStatus = HC_WAIT_CLOSE;
+//           _statusChange = millis();
+//           keepCurrentClient = true;
+//         } 
+//         */
+//       }
+//     } else { // !_currentClient.available()
+//     ......
+//--------------------------------------------------------------------------
 // original file in ../srcORG/
 //================================================================================
 
