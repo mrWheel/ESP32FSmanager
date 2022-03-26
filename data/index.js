@@ -1,150 +1,106 @@
 /*
 ***************************************************************************  
-**  Program  : index.js   part of Framework
+**  Program  : index.js, part of FSmanager template
+**  Version  : v2.0.0   (17-02-2021)
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-  console.log("now continue with the bootstrapMain");
   const APIGW='http://'+window.location.host+'/api/';
 
-  "use strict";
+"use strict";
 
-  var needReload  = true;
-  var timeTimer;
- 
+  let webSocketConn;
+  let needReload  = true;
+  let buttonsActive = true;
+  let cPensil     = "&#9998;";
+  let cDiskette   = "&#128190;";
+  let cCatalog    = "&#128452;";    // &#x1F5C4;
+  let cReturn     = "&#9166;";      // &#x23CE;
+  let cFRev       = "&#9194;";
+  let cFFrwd      = "&#9193;";
+  let cNextFree   = "&#9197;";
+  let cRecord     = "&#9210;";
+  let cPlay       = "&#128316;";
+  let nameEdit    = false;
+  let descEdit    = false;
+  let lockEdit    = false;
+  let gID         = 0;
+  let gLock       = false;
+  let actDESC     = false;
+  let actPTP      = false;
+  let actASM      = false;
+  let readCatalog = false;
+    
+  
   window.onload=bootsTrapMain;
   window.onfocus = function() {
     if (needReload) {
       window.location.reload(true);
     }
   };
-    
+
+      
   //============================================================================  
   function bootsTrapMain() 
   {
-    console.log("bootsTrapMain() ");
-    
-    refreshDevTime();
-    refreshDevInfo();
-    
-    document.getElementById('Knop1').addEventListener('click',function() 
-                                                {handleKnop(1);});
-    document.getElementById('Knop2').addEventListener('click',function() 
-                                                {handleKnop(2);});
-    document.getElementById('Settings').addEventListener('click',function() 
-                                                {settingsPage();});
-    document.getElementById('M_FSexplorer').addEventListener('click',function() 
-                                                { console.log("newTab: goFSexplorer");
-                                                  location.href = "/FSexplorer";
+    console.log("bootsTrapMain()");
+    needReload = true;
+
+    let count = 0;
+    while (document.getElementById('devVersion').value == "[version]") {
+      count++;
+      console.log("count ["+count+"] devVersion is ["+document.getElementById('devVersion').value+"]");
+      if (count > 10) {
+        alert("Count="+count+" => reload from server!");
+        window.location.reload(true);
+      }
+      setTimeout("", 500);
+    }
+
+    document.getElementById('M_FSmanager').addEventListener('click',function() 
+                                                { console.log("newTab: goFSmanager");
+                                                  location.href = "/FSmanager";
                                                 });
-    document.getElementById('S_FSexplorer').addEventListener('click',function() 
-                                                { console.log("newTab: goFSexplorer");
-                                                  location.href = "/FSexplorer";
-                                                });
-    document.getElementById('back').addEventListener('click',function() 
-                                                { console.log("newTab: goBack");
-                                                  location.href = "/";
-                                                });
+
     needReload = false;
-
-    clearInterval(timeTimer);  
-    timeTimer = setInterval(refreshDevTime, 30 * 1000); // repeat every 30s
-
+    /*
     document.getElementById("displayMainPage").style.display       = "block";
-    document.getElementById("displaySettingsPage").style.display   = "none";
-    //refreshDevInfo();
-
-    document.getElementById("M_FSexplorer").src="/FSexplorer.png";
-    document.getElementById("Settings").src="/settings.png";
-    document.getElementById("S_FSexplorer").src="/FSexplorer.png";
-    document.getElementById("Settings").src="/settings.png";
-
+    */
+  
   } // bootsTrapMain()
 
-  function settingsPage()
-  {
-    document.getElementById("displayMainPage").style.display       = "none";
-
-    var settingsPage = document.getElementById("settingsPage");
-    //refreshSettings();
-    document.getElementById("displaySettingsPage").style.display   = "block";
-    
-  } // settingsPage()
-
-  
+ /**
   //============================================================================  
-  function refreshDevTime()
+  function handleRadioChoice(radioChoice) 
   {
-    //console.log("Refresh api/v0/devtime ..");
-    fetch(APIGW+"v0/get/devtime")
-      .then(response => response.json())
-      .then(json => {
-        //format:
-        //{"devtime":{"datetime":"<the time>"}};
-        devtime = json['devtime'];
-        for( let key in devtime )
-        {
-          console.log("devtime["+key+"] => ["+devtime[key]+"]");
-          if (key == "datetime")
-          {
-            console.log("Found key==datetime => value["+devtime[key]+"]");
-            document.getElementById('DateTime').innerHTML = devtime[key];
-          }
-        }
-      })
-      .catch(function(error) {
-        var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
-      });     
-      
-  } // refreshDevTime()
-    
-  
-  //============================================================================  
-  function refreshDevInfo()
-  {
-    document.getElementById('devName').innerHTML = "";
-    fetch(APIGW+"v0/get/devinfo")
-      .then(response => response.json())
-      .then(json => {
-        //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-        data = json.devinfo;
-        for( let i in data )
-        {
-            if (data[i].name == "fwversion")
-            {
-              document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
+    console.log("handleRadioChoice("+radioChoice+")");
 
-            } else if (data[i].name == 'hostname')
-            {
-              document.getElementById('devName').innerHTML += data[i].value+" ";
+    if (!buttonsActive) return;
+    
+    console.log("send["+radioChoice+"]");
+    webSocketConn.send(radioChoice);
+    var show = document.getElementsByName('show'); 
               
-            } else if (data[i].name == 'ipaddress')
-            {
-              document.getElementById('devName').innerHTML += " ("+data[i].value+") ";
-            }
-        }
-      })
-      .catch(function(error) {
-        var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
-      });     
-  } // refreshDevInfo()
+    if (show[0].checked) actDESC = true
+    else                 actDESC = false;
+    if (show[1].checked) actPTP  = true
+    else                 actPTP  = false;
+    if (show[2].checked) actASM  = true
+    else                 actASM  = false;
+    
+  } // handleRadioChoice()
+  **/
   
   //============================================================================  
-  function handleKnop(knopNr) 
+  String.prototype.replaceAll = function(str1, str2, ignore) 
   {
-    console.log("handleKnop("+knopNr+") ...");
-    
-  } // handleKnop()
-  
+    return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+  //return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+  }
+   
 /*
 ***************************************************************************
 *

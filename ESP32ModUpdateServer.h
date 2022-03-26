@@ -1,27 +1,26 @@
 /* 
 ***************************************************************************  
-**  Program  : espModUpdateServer.h
+**  Program  : ESP32ModUpdateServer.h
+**  Version  : v2.3.0-rc5
+**
+**  Modified by 2020 Robert van den Breemen
+**
+**  TERMS OF USE: MIT License. See bottom of file.                                                            
 **  
 **  This is a hack based on sample code, the HTTP8266UpdateServer 
 **  and Willem Aandewiel modfication of the orginal.
 **
 **  API is compatible with the Willem's modification.
 ** 
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
 
 #ifndef ESP32_HTTP_UPDATE_SERVER_H
 #define ESP32_HTTP_UPDATE_SERVER_H
 
-#ifndef Debug
-  //#warning Debug() was not defined!
-  #define Debug(...)    ({ Serial.print(__VA_ARGS__); })  
-  #define Debugln(...)  ({ Serial.println(__VA_ARGS__); })  
-  #define Debugf(...)   ({ Serial.printf(__VA_ARGS__); })  
-//#else
-//  #warning Seems Debug() is already defined!
-#endif
+/*
+  B
+*/
 
 #include <WebServer.h>
 #include <Update.h>
@@ -31,18 +30,19 @@ class ESP32HTTPUpdateServer
 private:
   WebServer* _server;
 
-  String      _username;
-  String      _password;
-  bool        _serialDebugging;
+  String _username;
+  String _password;
+  bool _serialDebugging = true;
   const char *_serverIndex;
   const char *_serverSuccess;
 
 public:
-  ESP32HTTPUpdateServer(bool serialDebugging = false)
+  ESP32HTTPUpdateServer(bool serialDebugging = true)
   {
-    _server   = NULL;
+    _server = NULL;
     _username = "";
     _password = "";
+    _serialDebugging = serialDebugging;
   }
 
   void setIndexPage(const char *indexPage)
@@ -57,32 +57,28 @@ public:
 
   void setup(WebServer* server, const char* path = "/update", const char* username = "", const char* password = "")
   {
-    _server   = server;
+    _server = server;
     _username = username;
     _password = password;
 
     // Get of the index handling
-    _server->on(path, HTTP_GET, [&]() 
-    {
+    _server->on(path, HTTP_GET, [&]() {
       // Force authentication if a user and password are defined
-      if (_username.length() > 0 && _password.length() > 0 && !_server->authenticate(_username.c_str(), _password.c_str()))
-      {
-        return _server->requestAuthentication();
-      }
+      //-aaw- if (_username.length() > 0 && _password.length() > 0 && !_server->authenticate(_username.c_str(), _password.c_str()))
+      //-aaw-   return _server->requestAuthentication();
+
       _server->sendHeader("Connection", "close");
       _server->send(200, "text/html", _serverIndex);
     });
 
     // Post of the file handling
-    _server->on(path, HTTP_POST, [&]() 
-    {
+    _server->on(path, HTTP_POST, [&]() {
       _server->client().setNoDelay(true);
       _server->send_P(200, "text/html", (Update.hasError()) ? "FAIL" : _serverSuccess);
       delay(100);
       _server->client().stop();
       ESP.restart();
-    }, [&]() 
-    {
+    }, [&]() {
       HTTPUpload& upload = _server->upload();
 
       if (upload.status == UPLOAD_FILE_START) 
@@ -91,9 +87,8 @@ public:
         if (!(_username.length() == 0 || _password.length() == 0 || _server->authenticate(_username.c_str(), _password.c_str())))
         {
           if (_serialDebugging)
-          {
-            DebugTf("Unauthenticated Update\r\n");
-          }
+            Serial.printf("Unauthenticated Update\n");
+
           return;
         }
 
@@ -101,50 +96,31 @@ public:
         if (_serialDebugging) 
         {
           Serial.setDebugOutput(true);
-          DebugTf("Update: %s\r\n", upload.filename.c_str());
+          Serial.printf("Update: %s\n", upload.filename.c_str());
         }
 
         // Starting update
         bool error = Update.begin(UPDATE_SIZE_UNKNOWN);
         if (_serialDebugging && error)
-        {
           Update.printError(Serial);
-          Update.printError(TelnetStream);
-        }
       }
       else if (upload.status == UPLOAD_FILE_WRITE) 
       {
         if (Update.write(upload.buf, upload.currentSize) != upload.currentSize && _serialDebugging) 
-        {
           Update.printError(Serial);
-          Update.printError(TelnetStream);
-        }
-        Debug(".");
       }
       else if (upload.status == UPLOAD_FILE_END) 
       {
-        //if (Update.end(true) && _serialDebugging)
-        if (Update.end(true))
-        {
-          DebugTln();
-          DebugTf("Update Success: %u\r\n", upload.totalSize);
-          DebugTf("Rebooting...\r\n");
-          delay(1000);
-        }
+        if (Update.end(true) && _serialDebugging)
+          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
         else if(_serialDebugging)
-        {
           Update.printError(Serial);
-          Update.printError(TelnetStream);
-        }
+
         if(_serialDebugging)
-        {
           Serial.setDebugOutput(false);
-        }
       }
       else if(_serialDebugging)
-      {
-        Debugf("Update Failed Unexpectedly (likely broken connection): status=%d\r\n", upload.status);
-      }
+        Serial.printf("Update Failed Unexpectedly (likely broken connection): status=%d\n", upload.status);
     });
 
     _server->begin();
@@ -175,5 +151,4 @@ public:
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * 
-****************************************************************************
-*/
+***************************************************************************/

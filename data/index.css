@@ -1,272 +1,340 @@
-/*
-***************************************************************************  
-**  Program  : index.css    part of framework
-**
-**  Copyright (c) 2020 Willem Aandewiel
-**
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
-*/
-* {
-  font-family: Arial, Helvetica, sans-serif;
+
+html, body, textarea {
+  box-sizing: border-box;
 }
 
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: 'Dosis', sans-serif;
-  line-height: 1.6;
-  color: black;
-  background: #e6ffff;
-}
-
-table {
-  color: black;
-  border-collapse: collapse;
-  width: 90%;
-  background: lightblue;
-}
-
-th {
-  padding-left: 15px;
-  padding-right: 15px;
-  white-space: nowrap;
-  border-right: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-  vertical-align: bottom;
-}
-
-td {
-  padding-left: 15px;
-  padding-right: 15px;
-  white-space: nowrap;
-  border-bottom: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-  vertical-align: bottom;
-}
-
-tfoot {
-  font-size: 12px;
-  color: darkblue;
-}
-
-input {
-   padding-top: 3px;
-   padding-bottom: 2px;
-   font-size: 12pt;
-}
-
-.settingDiv {
-  background: lightblue;  
-  white-space: nowrap;  
-}
-
-.outer-div {
-  /*width: 90%; */
-  text-align: center;
-  background-color: #e6ffff 
-}
-.inner-div {
-  display: inline-block; 
-  /*
-  margin: 0 auto;
-  padding: 3px;
-  background-color: lightblue
-  */
-}
-
-.container-card {
-  padding: 50;
-  margin: 50;
-  list-style: none;
-  flex-direction: row; /*row | row-reverse | column | column-reverse*/
-  
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  
-  -webkit-flex-flow: row wrap;
-  justify-content: space-around; /* flex-start | flex-end | center | space-between | space-around | space-evenly */
-
-}
-
-.container-box {
-  padding: 0;
+html, body {
   margin: 0;
-  list-style: none;
-  flex-direction: column; /*row | row-reverse | column | column-reverse*/
-  
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100vh;  /*100% view height */
+  width: 100vw;   /* 100% view width */
+  background: lightblue;
+  font-family: monospace; 
+  font-size: 12pt;
+} 
+h1 {
+  color: #1c1c1d;
+  font-family: 'Raleway', sans-serif;
+  font-size: 22px;
+  font-weight: normal;
+  margin: -2px 0px 0px;
+  text-align: left;
+  display: inline-block;
+  text-shadow: 1px 1px 2px #082b34;
+}
+
+.big {
+  display: inline-block;
+}
+.title::first-letter {
+  font-size: 200%;
+  color: red;
+}
+
+input[type='text'] {
+  font-size: 30px; 
+  font-family: monospace; 
+  vertical-align: center;
+} 
+textarea {
+  width: 600px;
+  height: 80%;
+  font-size: 12pt;
+  font-family: monospace; 
+  background: lightblue; 
+  border: 1px solid black;
+}
+button {
+  font-size: 20px;
+}
+
+.header-nav {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex-content: center;
+  width: 100%;
+  height: 50px;
+  border: 1px solid black;
+}
+.columns {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: auto;
+}
+.navRightFS { 
+  font-size: 1.8em;
+  position: fixed; /*position: right; */
+  right: 0%;
+  height: 0;
+}
+.navRightFS:hover { 
+  font-size: 2.1em;
+  position: fixed; 
+  right: 0%;
+}
+.navRightCAT { 
+  font-size: 1.8em;
+  position: fixed; /* right; */
+  right: 10%;
+  height: 0;
+}
+.navRightCAT:hover { 
+  font-size: 2.1em;
+  position: fixed;  /* right; */
+  right: 10%;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  flex: 1 0 800px;
+  justify-content: center;
+}
   
-  -webkit-flex-flow: column wrap;
-  justify-content: flex-start;
-  margin-top: 10px;
-
+.box.flex {
+  display: flex;
 }
 
-/*--------------------- N A V - B A R -----------------*/
-.nav-container {
-  list-style: none;
-  margin: 0; 
-  
-  background: #00bffe;
-  
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex-start;
-  -webkit-flex-flow: row wrap;
-  min-height: 24px; 
-
+.box {
+  flex: 0 0 600px;
+  border-radius: 4px;
 }
 
-.nav-img {
-  top: 1px;
-  display: inline-block;
-  width: 40px;
-  height: 40px;
+
+.box.left  {
+  flex-shrink: 0;
+  text-align: left;
 }
 
-.nav-item {
-  display: inline-block;
-  font-size: 16px;
-  padding: 10px 0;
-  height: 20px;
-  width: 110px;
-  border: none;
-  color: white;
-
+.box.center  {
+  flex-shrink: 0;
+  text-align: center;
 }
 
-.nav-left {
-  flex: 2 1 0;
-  text-align: center; 
-}
-
-.nav-right {
-  flex: 1 1 0;
+.box.right  {
+  flex-shrink: 0;
   text-align: right;
-  width: 200px; 
 }
 
-.nav-container a:hover {
-  color: black;
-  background: skyblue; /* only for FSexplorer - Rest does not work */
+.id {
+  display: flex;
+  flex: 1 1 600px;
+  justify-content: center;
+  align-items: center;   
+}
+.id-child {
+    flex: 1 1 500px;
+    width: 500px;
+    text-align: right;
 }
 
-.nav-clock {
-  //top: 1px;
-  color: black;
-  float: right;
-  font-size: small;
-  font-weight:bold;
-  text-align: right;
-  background: white; 
-  width: 200px; 
-  padding-right: 10px;
-  background: #e6ffff;
+.id-child:first-child {
+    flex: 1 1 100px;
+    display: none;
+    width: 100px;
+    height: 100px;
+    font-size: 55pt;
+    text-align: center;
+    border: 2px solid black;
 }
 
-/*-------------------------*/
-/***
-@media all and (max-width: 600px) {
-  .nav-container {
-    justify-content: space-around;
-  }
+.id-child-wait:first-child {
+    flex: 1 1 100px;
+    display: block;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    border: 2px solid black;
+    background: lightblue;
+
 }
 
-@media all and (max-width: 400px) {
-  .nav-container {
-    -webkit-flex-flow: column wrap;
-    flex-flow: column wrap;
-    padding: 0;
-  }
+.name {
+  display: flex;
+  flex: 1 1 600px;
+  order: 2;
+  height: 50px;
+  justify-content: center;
+  align-items: center;  
 }
-***/
-
-.tabButton {
-  background-color: white;
-}
-
-.tabButton a:hover {
-  background-color: gray;
+.name-child {
+    flex: 1 1 100px;
+    width: 100px;
+    text-align: right;
 }
 
+.name-child:first-child {
+    flex: 1 1 500px;
+    width: 500px;
+    display: inline-block;
+    text-align: left;
+}
 
-.header h1 span {
-  position: relative;
-  top: 1px;
-  left: 10px;
+
+.description {
+  display: flex;
+  flex: 1 1 600px;
+  justify-content: center;
+  align-items: center;   
+  font-size: 20px; 
+  text-align: left;
+  height: 55vh;
+}
+.textNoWrap {
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: scroll;
+}
+
+.catRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0px;
+  border: 1px solid gray;
+  background-color: #e1e1e1;
+  flex-direction: row;
+}
+.catRow:last-child {
+  margin-bottom: 0;
+}
+
+.catColFname  {
+  flex: 0 0 230px;
+  margin-left: 5px;
+  border-left: none;
+  margin-right: 5px;
+  border: 0;
+  text-decoration: none!important;
+}
+.catColID {
+  flex: 0 0 35px;
+  border: 0 0;
+  justify-content:center;
+}
+
+.catColButton {
+  flex: 0 0 5px;
+  margin-left: 0px;
+  justify-content:center;
+}
+
+.catLinkButton {
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    border: solid 1px #e1e1e1;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    color: white; 
+    padding-left: 1px;
+    padding-right: 1px;
+    text-decoration: none;
+}
+
+.rotate90 {
+  display: inline-block; 
+  transform: rotate(90deg);
 }
 
 .bottom { 
   position: fixed;
+  order: 3;
   font-size: small;
   color: gray;
   bottom:0;
 } 
 .right-0  {right: 0; padding-right: 10px; }
 .left-0   {left:  0; padding-left:  10px; }
-            
-//--- next 4 are for the API doc page --------
-.div1 { 
-  float: left;  
-  margin-left: 20px; 
-  margin-top: 10px;
+
+.status { 
+  position: fixed;
+  order: 3;
+  color: red;
+  bottom:0;
+} 
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   color: gray;
+   font-size: small;
+   text-align: right;
 }
-.div1 a:link, a:visited { 
-  background-color: deepSkyBlue; 
-  color: white; 
-  padding: 5px 15px; 
-  width: 210px; 
-  text-align: right; 
-  text-decoration: none; 
+
+
+/*------ START SLIDER CSS ---------*/
+/* https://stackoverflow.com/questions/39846282/how-to-add-the-text-on-and-off-to-toggle-button */
+
+.switch {
+  position: relative;
   display: inline-block;
-}
-.div1 a:hover, a:active { 
-  background-color: deepSkyBlue;
-  color: black;
+  width: 80px;
+  height: 24px;
 }
 
-.div2 { 
-  margin-left: 280px; 
-  margin-top: -52px;
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ca2222;
+  -webkit-transition: .4s;
+  transition: .4s;
+   border-radius: 24px;
 }
 
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+.slider:after
+{
+ content:'RO';
+ color: white;
+ display: block;
+ position: absolute;
+ transform: translate(-50%,-50%);
+ top: 50%;
+ left: 50%;
+ font-size: 10px;
+ font-family: Verdana, sans-serif;
+}
 
-/* define tag selectors () -------------------------------------------------- */
-
-button { width: 100px; }
-
-/*
-***************************************************************************
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to permit
-* persons to whom the Software is furnished to do so, subject to the
-* following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
-***************************************************************************
-*/
+input:checked + .slider {
+  background-color: #2ab934;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(16px);
+  -ms-transform: translateX(16px);
+  transform: translateX(55px);
+}
+input:checked + .slider:after
+{  
+  content:'R/W';
+}
+/*--------- END SLIDER CSS --------*/
