@@ -1,16 +1,9 @@
 /* 
 ***************************************************************************  
 **  Program  : ESP32ModUpdateServer.h
-**  Version  : v2.3.0-rc5
-**
-**  Modified by 2020 Robert van den Breemen
+**  Version  : v2.0.0
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
-**  
-**  This is a hack based on sample code, the HTTP8266UpdateServer 
-**  and Willem Aandewiel modfication of the orginal.
-**
-**  API is compatible with the Willem's modification.
 ** 
 ***************************************************************************      
 */

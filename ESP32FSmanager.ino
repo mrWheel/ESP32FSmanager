@@ -19,6 +19,8 @@
 
 #define _HOSTNAME   "ESP32FSmanager"
 
+#define _MAX_LITTLEFS_FILES   30
+
 #include "WiFicredentials.h"
 const char ssid[] = WIFI_SSID;    
 const char pass[] = WIFI_PASSWORD;  
@@ -115,7 +117,7 @@ void setup()
   
   httpServer.begin();
   
-  SPrintln("HTTP httpServer started");
+  DebugTln("HTTP httpServer started");
 
 }   // setup()
 

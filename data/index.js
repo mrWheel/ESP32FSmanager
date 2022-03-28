@@ -62,7 +62,7 @@
 
     document.getElementById('M_FSmanager').addEventListener('click',function() 
                                                 { console.log("newTab: goFSmanager");
-                                                  location.href = "/FSmanager";
+                                                  location.href = "/FSmanager?sort=sort";
                                                 });
 
     needReload = false;
